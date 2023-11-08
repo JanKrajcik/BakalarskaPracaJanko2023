@@ -12,6 +12,11 @@ class Vertex {
         // akoze private.
         this._index = index;
         this._successors = successors;
+        //TODO Nebude tu treba ukladat aj nejako hrany?
+        // Ci vlastne tie bude vediet vykreslovacia metoda nakreslit sama
+        // 0 alebo 1 podla pozicie successora v poli?
+        // Aj ked, takymto pristupom by sme nemohli nasledne upravovat
+        // jednotlive hrany, aku maju mat farbu, styl a pod.
     }
 
     // Getter for the vertex index
@@ -53,6 +58,15 @@ class Vertex {
 }
 
 /**
+ * Final vertex displaying the result value of the evaluation.
+ */
+class ResultVertex {
+    constructor(name, year) {
+        this.name = name;
+        this.year = year;
+    }
+}
+/**
  * Class MDD representing diagram.
  * Stores root vertex of the diagram.
  */
@@ -61,8 +75,12 @@ class MDD {
         this._rootVertex = rootVertex;
     }
 
-
-    evaluate(arrayOfIntegers) {
+    /**
+     * Method evaluate evaluates the result of the given steps in the MDD.
+     * Input should be an array of integers such as: [0,1,0,0,0,1].
+     */
+    evaluate() {
+        //TODO implement array of integers to be used as input.
         //TODO logika metody evaluate.
 
         // Haha, tato hlupost nevie radit metody, lebo to nevie, ze root vertex je typu Vertex.
@@ -75,11 +93,30 @@ class MDD {
         // su rovnako zoradene v arrayliste, teda ak vytiahneme nulty prvok,
         // ako by sme isli cestou 0, ak vytiahneme prvy, ako by sle isli cestou 1?
         //this._rootVertex._successors.
+        this.printMDDStructure(this._rootVertex);
+
+    }
+    // Function to print the structure of the MDD recursively
+    printMDDStructure(vertex, level = 0) {
+        const indentation = '   '.repeat(level); // Create indentation based on the level
+        console.log(`${indentation}Vertex ${vertex.index}`);
+        for (const successor of vertex.successors) {
+            this.printMDDStructure(successor, level + 1);
+        }
     }
 }
-class ResultVertex {
-    constructor(name, year) {
-        this.name = name;
-        this.year = year;
-    }
-}
+
+const vertex1 = new Vertex(1);
+const vertex2 = new Vertex(2);
+const vertex3 = new Vertex(3);
+const vertex4 = new Vertex(4);
+const vertex5 = new Vertex(5);
+
+vertex1.addSuccessor(vertex2);
+vertex1.addSuccessor(vertex3);
+vertex1.addSuccessor(vertex4);
+vertex2.addSuccessor(vertex5);
+
+
+const mdd = new MDD(vertex1);
+mdd.evaluate();
