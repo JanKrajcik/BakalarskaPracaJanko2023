@@ -1,13 +1,9 @@
 /**
  * Changelog:
- * -Changed name of this class from triedy.js to diagram.js
- * -Removed some methods from Vertex that are not needed, as Vertex won't be changing much after being created.
- * -Added Jest tests for all the methods.
- *
+ * -evaluate() accepts array of integers as input and returns resultVertex now.
+ * -Updated printMDDStructure() to support diagrams terminated with ResultVertexes, updated its tests to match new implementation.
+ * -Added tests for evaluate().
  */
-
-// Fun fact: this is called kebab-case: multivalued-decision-diagram
-//               -||-       snake_case: multivalued_decision_diagram
 
 /**
  * Class Vertex representing one vertex in diagram.
@@ -22,18 +18,10 @@ class Vertex {
         // Term sons could be used instead of successors, I like successors more, as they seem more appropriate to me.
 
         // Edges are not needed here, the drawing method knows which edge is what number,
-        // as they are going to be in the due order here in this array.
+        // as they are going to be in the due order here in successors array.
         //TODO PROBLEM - What if we want to have an edge with title 1, even though we only have one successor from the original vertex?
-        // Could be a problem with this architecture :D.
-
-        // Ci vlastne tie bude vediet vykreslovacia metoda nakreslit sama
-        // 0 alebo 1 podla pozicie successora v poli?
-        // Aj ked, takymto pristupom by sme nemohli nasledne upravovat
-        // jednotlive hrany, aku maju mat farbu, styl a pod.
+        // Could be a problem with this architecture. Another option could be editing it only on drawing layer, which I'm not sure is the best way to do it.
     }
-
-    //TODO pridat druhy konstruktor, kde bude len hodnota, co bude vlastne ten vysledny vrchol.
-    // PROBLEM. Overload konstruktorov nie je mozny v JavaScripte.
 
     // Getter for the vertex index
     get index() {
@@ -94,8 +82,6 @@ class Vertex {
  * Final vertex displaying the result value of the evaluation.
  */
 class ResultVertex {
-    //TODO add tests for this class.
-    //TODO implement logic to evaluate using this class.
     constructor(value) {
         this.value = value;
     }
@@ -117,43 +103,97 @@ class MDD {
 
     /**
      * Method evaluate evaluates the result of the given steps in the MDD.
-     * Input should be an array of integers such as: [0,1,0,0,0,1].
+     *
+     * Each integer corresponds to the path to take at each decision node.
+     * For example, if the input array is [0,1,0], it means to take the first path at the root node,
+     * then the second path at its successor, and finally the first path at the successor of the second node.
+     * @param {number[]} steps - An array of integers such as: [0,1,0,0,0,1] representing the decision steps.
+     * @returns {ResultVertex|null} The result of the evaluation, which is ResultVertex if found, or null if not found.
      */
-    evaluate() {
-        //TODO implement array of integers (such as: [0,1,0,0,0,1].) to be used as input.
-        //TODO logika metody evaluate.
+    evaluate(steps) {
+        let currentVertex = this._rootVertex;
 
-        // Haha, tato hlupost nevie radit metody, lebo to nevie, ze rootVertex je typu Vertex.
+        for (const step of steps) {
+            const successors = currentVertex.successors;
+            if (step >= 0 && step < successors.length) {
+                currentVertex = successors[step];
+            } else {
+                console.error(`Invalid step ${step} at vertex ${currentVertex.index}`);
+                return null;
+            }
 
-        //TODO asi by tu malo ist o to, ze podla poctu vstupnych parametrov
-        // prejdeme dany pocet vrcholov a s predpokladom, ze posledny vlastne
-        // nie je vertex ale ResultVertex si od neho vypytame, aka je jeho hodnota.
+            // If the current vertex is a ResultVertex, return it
+            if (currentVertex instanceof ResultVertex) {
+                return currentVertex;
+            }
+        }
 
-        // Vo vertexoch potom predpokladame s tym, ze podla cisla cesty (0,1,...)
-        // su rovnako zoradene v arrayliste, teda ak vytiahneme nulty prvok,
-        // ako by sme isli cestou 0, ak vytiahneme prvy, ako by sle isli cestou 1.
+        // If no ResultVertex is found, return null
+        return null;
+    }
 
-        this.printMDDStructure(this._rootVertex);
+    /**
+     * Evaluates route and prints the path through the diagram.
+     * @param {number[]} steps - An array of integers representing the decision steps.
+     * @returns {ResultVertex|null} The result of the evaluation, which is a ResultVertex if found, else null.
+     */
+    evaluateAndPrintPath(steps) {
+        //console.log('---MDD structure--- ');
+        //this.printMDDStructure(this._rootVertex);
+        let currentVertex = this._rootVertex;
+        let path = []; // Array to store the route through the diagram
+
+        for (const step of steps) {
+            const successors = currentVertex.successors;
+            if (step >= 0 && step < successors.length) {
+                // Store the index of the chosen successor in the path array
+                path.push(currentVertex instanceof ResultVertex ? `RV${currentVertex.resultValue}` : `V${currentVertex.index}`);
+                currentVertex = successors[step];
+            } else {
+                console.error(`Invalid step ${step} at vertex ${currentVertex.index}`);
+                return null;
+            }
+
+            // If the current vertex is a ResultVertex, add it to the path and return it
+            if (currentVertex instanceof ResultVertex) {
+                path.push(`RV${currentVertex.resultValue}`);
+                console.log('---Path through the diagram---');
+                console.log(path.join(' -> ')); // Print the entire route in one line
+                return currentVertex;
+            }
+        }
+
+        // If no ResultVertex is found, return null
+        return null;
     }
 
     /**
      * Function to print the structure of the MDD recursively
-     * @param vertex being processed during the recursive calls.
-     * @param levelOfVertex  in the "tree" of vertexes
+     * @param {Vertex|ResultVertex} vertex - The vertex being processed during the recursive calls.
+     * @param {number} levelOfVertex - in the "tree" of vertexes
      *                      (Number of edges that separate the vertex from the root).
      */
     printMDDStructure(vertex, levelOfVertex = 0) {
-        const indentation = '   '.repeat(levelOfVertex); // Create indentation based on the levelOfVertex
-        console.log(`${indentation}Vertex ${vertex.index}`);
-        for (const successor of vertex.successors) {
-            this.printMDDStructure(successor, levelOfVertex + 1);
+        const indentation = '  '.repeat(levelOfVertex); // Create indentation based on the levelOfVertex
+        // Check if the vertex is an instance of Vertex
+        if (vertex instanceof Vertex) {
+            console.log(`${indentation}V${vertex.index}`);
+            // Print the structure recursively for each successor
+            for (const successor of vertex.successors) {
+                this.printMDDStructure(successor, levelOfVertex + 1);
+            }
+        } else if (vertex instanceof ResultVertex) {
+            // If the vertex is an instance of ResultVertex, print "RV" followed by its resultValue
+            console.log(`${indentation}RV${vertex.resultValue}`);
+        } else {
+            console.error('ERROR: Not a vertex or resultVertex.'); // Print an error message if the vertex type is invalid
         }
     }
 }
 
 
 // TESTS************************************
-const vertex1 = new Vertex(1);
+/*const vertex1 = new Vertex(1);
 const vertex2 = new Vertex(2);
 const vertex3 = new Vertex(3);
 const vertex4 = new Vertex(4);
@@ -166,7 +206,86 @@ vertex2.addSuccessor(vertex5);
 
 
 const mdd = new MDD(vertex1);
-mdd.evaluate();
+mdd.printMDDStructure(vertex1)*/
 
 
-module.exports = { Vertex, MDD };
+/*const vertex1 = new Vertex(1);
+const vertex2 = new Vertex(2);
+const vertex3 = new Vertex(3);
+const vertex4 = new Vertex(4);
+const vertex5 = new Vertex(5);
+const vertex6 = new Vertex(6);
+const vertex7 = new Vertex(7);
+const vertex8 = new Vertex(8);
+const vertex9 = new Vertex(9);
+const vertex10 = new Vertex(10);
+const vertex11 = new Vertex(11);
+
+const resultVertex1 = new ResultVertex(1);
+const resultVertex2 = new ResultVertex(2);
+const resultVertex3 = new ResultVertex(3);
+const resultVertex4 = new ResultVertex(4);
+
+// Define the structure of the diagram
+vertex1.addSuccessor(vertex2);
+vertex1.addSuccessor(vertex3);
+vertex2.addSuccessor(vertex4);
+vertex2.addSuccessor(vertex5);
+vertex4.addSuccessor(vertex6);
+vertex4.addSuccessor(vertex7);
+vertex5.addSuccessor(vertex8);
+vertex5.addSuccessor(vertex9);
+vertex8.addSuccessor(vertex10);
+vertex9.addSuccessor(vertex11);
+
+vertex6.addSuccessor(resultVertex1);
+vertex7.addSuccessor(resultVertex2);
+vertex10.addSuccessor(resultVertex3);
+vertex11.addSuccessor(resultVertex4);
+
+// Create the MDD with the root vertex
+const mdd = new MDD(vertex1);
+//mdd.printMDDStructure(vertex1);
+mdd.evaluateAndPrintPath([0, 1, 0, 0, 0]);*/
+
+/*const vertex1 = new Vertex(1);
+const vertex2 = new Vertex(2);
+const vertex3 = new Vertex(3);
+const vertex4 = new Vertex(4);
+const vertex5 = new Vertex(5);
+const vertex6 = new Vertex(6);
+const vertex7 = new Vertex(7);
+const vertex8 = new Vertex(8);
+const vertex9 = new Vertex(9);
+const vertex10 = new Vertex(10);
+const vertex11 = new Vertex(11);
+
+const resultVertex1 = new ResultVertex(1);
+const resultVertex2 = new ResultVertex(2);
+const resultVertex3 = new ResultVertex(3);
+const resultVertex4 = new ResultVertex(4);
+
+// Define the structure of the diagram
+vertex1.addSuccessor(vertex2);
+vertex1.addSuccessor(vertex3);
+vertex2.addSuccessor(vertex4);
+vertex2.addSuccessor(vertex5);
+vertex4.addSuccessor(vertex6);
+vertex4.addSuccessor(vertex7);
+vertex5.addSuccessor(vertex8);
+vertex5.addSuccessor(vertex9);
+vertex8.addSuccessor(vertex10);
+vertex9.addSuccessor(vertex11);
+
+vertex6.addSuccessor(resultVertex1);
+vertex7.addSuccessor(resultVertex2);
+vertex10.addSuccessor(resultVertex3);
+vertex11.addSuccessor(resultVertex4);
+
+// Create the MDD with the root vertex
+const mdd = new MDD(vertex1);
+
+// Call evaluateAndPrintPath with valid steps
+const result = mdd.evaluateAndPrintPath([0, 1, 0, 0, 0]);*/
+
+module.exports = { Vertex, ResultVertex, MDD };
