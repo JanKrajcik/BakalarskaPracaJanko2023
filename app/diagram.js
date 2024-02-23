@@ -1,16 +1,16 @@
 /**
  * Changelog:
- * -evaluate() accepts array of integers as input and returns resultVertex now.
- * -Updated printMDDStructure() to support diagrams terminated with ResultVertexes, updated its tests to match new implementation.
- * -Added tests for evaluate().
+ * -Added table.js (generating and printing function implemented)
+ * -Reworked evaluate method in diagram.
+ * -Refactoring of names. ResultVertex is now TerminalNode. InternalNode is now InternalVertex.
  */
 
 /**
- * Class Vertex representing one vertex in diagram.
+ * Class InternalNode representing one InternalNode in diagram.
  * It has its index and holds array of its
- *  successors (other instances of Vertex class).
+ *  successors (other instances of InternalNode class).
  */
-class Vertex {
+class InternalNode {
     constructor(index, successors = []) {
         // Underscore before name of the variable means, that it is private. (It is just a que for programmer, JS ignores it.)
         this._index = index;
@@ -19,23 +19,23 @@ class Vertex {
 
         // Edges are not needed here, the drawing method knows which edge is what number,
         // as they are going to be in the due order here in successors array.
-        //TODO PROBLEM - What if we want to have an edge with title 1, even though we only have one successor from the original vertex?
+        //PROBLEM - What if we want to have an edge with title 1, even though we only have one successor from the original InternalNode?
         // Could be a problem with this architecture. Another option could be editing it only on drawing layer, which I'm not sure is the best way to do it.
     }
 
-    // Getter for the vertex index
+    // Getter for the InternalNode index
     get index() {
         return this._index;
     }
 
     /**
      * !!!! Needed for testing, DO NOT REMOVE !!!!
-     * It will probably be needed even outside the testing, as you have to create vertex,
-     * before you can use it as successor when creating another vertex.
+     * It will probably be needed even outside the testing, as you have to create InternalNode,
+     * before you can use it as successor when creating another InternalNode.
      * Another option will be, to create the diagram from the bottom, where successors
-     * already exist when creating another layer of vertexes closer to the root.
+     * already exist when creating another layer of InternalNodes closer to the root.
      * Add successor to the _successors array.
-     * @param successor is another instance of Vertex class.
+     * @param successor is another instance of InternalNode class.
      */
     addSuccessor(successor) {
         this._successors.push(successor);
@@ -47,8 +47,8 @@ class Vertex {
     }
 
     /**
-     * @param index index of the successor in the _successors array of this Vertex.
-     * @returns {*|null} returns the Vertex from the _successors array based on its index.
+     * @param index index of the successor in the _successors array of this InternalNode.
+     * @returns {*|null} returns the InternalNode from the _successors array based on its index.
      *                   If index is nonsense or out of bounds, returns null.
      */
     getSuccessor(index) {
@@ -59,7 +59,7 @@ class Vertex {
     }
 
     /**
-     * @returns number of successors in the _successors array of this Vertex.
+     * @returns number of successors in the _successors array of this InternalNode.
      */
     getSuccessorsCount() {
         return this._successors.length;
@@ -79,9 +79,9 @@ class Vertex {
 }
 
 /**
- * Final vertex displaying the result value of the evaluation.
+ * Terminal node displaying the result value of the evaluation.
  */
-class ResultVertex {
+class TerminalNode {
     constructor(value) {
         this.value = value;
     }
@@ -94,110 +94,109 @@ class ResultVertex {
 
 /**
  * Class MDD representing diagram.
- * Stores root vertex of the diagram.
+ * Stores root InternalNode of the diagram.
  */
 class MDD {
-    constructor(rootVertex) {
-        this._rootVertex = rootVertex;
+    //TODO Creating MDD without a valid InternalNode should probably be prohibited somehow.
+    constructor(rootNode) {
+        this._rootNode = rootNode;
     }
 
     /**
-     * Method evaluate evaluates the result of the given steps in the MDD.
+     * Method evaluate evaluates the result of the given variablesValues in the MDD.
      *
-     * Each integer corresponds to the path to take at each decision node.
-     * For example, if the input array is [0,1,0], it means to take the first path at the root node,
-     * then the second path at its successor, and finally the first path at the successor of the second node.
-     * @param {number[]} steps - An array of integers such as: [0,1,0,0,0,1] representing the decision steps.
-     * @returns {ResultVertex|null} The result of the evaluation, which is ResultVertex if found, or null if not found.
+     * Each integer corresponds to the path to take at decision node at integers index.
+     * For example, if the input array is [0,1,0], and the internal nodes in MDD are ordered
+     * by index (node with index 0 is root node, only nodes with index 1 are successors of root node,
+     * only nodes with index 2 are sucessors of nodes with index 1,....) the variableValues would mean
+     * to take the first path at the root node, then the second path at its successor,
+     * and finally the first path at the successor of the second node.
+     * @param {number[]} variablesValues - An array of integers such as: [0,1,0,0,0,1] representing the decision variablesValues.
+     * @returns {TerminalNode|null} The result of the evaluation, which is TerminalNode if found, or null if not found.
      */
-    evaluate(steps) {
-        let currentVertex = this._rootVertex;
+    evaluate(variablesValues) {
+        let CurrentNode = this._rootNode;
 
-        for (const step of steps) {
-            const successors = currentVertex.successors;
-            if (step >= 0 && step < successors.length) {
-                currentVertex = successors[step];
-            } else {
-                console.error(`Invalid step ${step} at vertex ${currentVertex.index}`);
+        while (!(CurrentNode instanceof TerminalNode)) {
+            if ((variablesValues.length-1) < CurrentNode.index || variablesValues[CurrentNode.index] > (CurrentNode.getSuccessorsCount() - 1)) {
+                console.error(`Invalid decision at node index ${CurrentNode.index}: Either the decision exceeds the number of node's successors or it is beyond the provided decisions' scope.`);
                 return null;
             }
+            // Selects new CurrentNode from sucessors of CurrentNode.
+            // The decision that is made on CurrentNode is based on index of the CurrentNode.
+            //     n-th variableValue (decision) is performed on n-th node.
+            CurrentNode = CurrentNode.successors[variablesValues[CurrentNode.index]];
 
-            // If the current vertex is a ResultVertex, return it
-            if (currentVertex instanceof ResultVertex) {
-                return currentVertex;
-            }
         }
-
-        // If no ResultVertex is found, return null
-        return null;
+        return CurrentNode;
     }
 
     /**
      * Evaluates route and prints the path through the diagram.
-     * @param {number[]} steps - An array of integers representing the decision steps.
-     * @returns {ResultVertex|null} The result of the evaluation, which is a ResultVertex if found, else null.
+     * @param {number[]} variablesValues - An array of integers representing the decisions on nodes.
+     * @returns {TerminalNode|null} The result of the evaluation, which is a TerminalVertex if found, else null.
      */
-    evaluateAndPrintPath(steps) {
-        //console.log('---MDD structure--- ');
-        //this.printMDDStructure(this._rootVertex);
-        let currentVertex = this._rootVertex;
-        let path = []; // Array to store the route through the diagram
+    evaluateAndPrintPath(variablesValues) {
+        let CurrentNode = this._rootNode;
+        let path = []; // This will store the path as we traverse the graph
 
-        for (const step of steps) {
-            const successors = currentVertex.successors;
-            if (step >= 0 && step < successors.length) {
-                // Store the index of the chosen successor in the path array
-                path.push(currentVertex instanceof ResultVertex ? `RV${currentVertex.resultValue}` : `V${currentVertex.index}`);
-                currentVertex = successors[step];
-            } else {
-                console.error(`Invalid step ${step} at vertex ${currentVertex.index}`);
+        while (!(CurrentNode instanceof TerminalNode)) {
+            // Check for out-of-bounds or invalid decisions
+            if ((variablesValues.length - 1) < CurrentNode.index || variablesValues[CurrentNode.index] < 0 || variablesValues[CurrentNode.index] >= CurrentNode.getSuccessorsCount()) {
+                console.error(`Invalid decision at node index ${CurrentNode.index}: Either the decision exceeds the number of node's successors or it is beyond the provided decisions' scope.`);
                 return null;
             }
 
-            // If the current vertex is a ResultVertex, add it to the path and return it
-            if (currentVertex instanceof ResultVertex) {
-                path.push(`RV${currentVertex.resultValue}`);
-                console.log('---Path through the diagram---');
-                console.log(path.join(' -> ')); // Print the entire route in one line
-                return currentVertex;
-            }
+            // Add the current node to the path before making the next move
+            path.push(CurrentNode instanceof TerminalNode ? `TN${CurrentNode.resultValue}` : `N${CurrentNode.index}`);
+
+            // Move to the next node based on the decision
+            CurrentNode = CurrentNode.successors[variablesValues[CurrentNode.index]];
         }
 
-        // If no ResultVertex is found, return null
-        return null;
+        // Once the loop is done, it means we've reached a TerminalNode
+        // Add the terminal node to the path as well
+        path.push(`TN${CurrentNode.resultValue}`);
+
+        // Print the path
+        console.log('---Path through the diagram---');
+        console.log(path.join(' -> '));
+
+        return CurrentNode;
     }
+
+
 
     /**
      * Function to print the structure of the MDD recursively
-     * @param {Vertex|ResultVertex} vertex - The vertex being processed during the recursive calls.
-     * @param {number} levelOfVertex - in the "tree" of vertexes
-     *                      (Number of edges that separate the vertex from the root).
+     * @param {InternalNode|TerminalNode} node - The node being processed during the recursive calls.
+     * @param {number} levelOfNode - in the "tree" of nodes
+     *                      (Number of edges that separate the node from the root).
      */
-    printMDDStructure(vertex, levelOfVertex = 0) {
-        const indentation = '  '.repeat(levelOfVertex); // Create indentation based on the levelOfVertex
-        // Check if the vertex is an instance of Vertex
-        if (vertex instanceof Vertex) {
-            console.log(`${indentation}V${vertex.index}`);
+    printMDDStructure(node, levelOfNode = 0) {
+        const indentation = '  '.repeat(levelOfNode); // Create indentation based on the levelOfNode
+        //Printing InternalNodes differently than TerminalNodes.
+        if (node instanceof InternalNode) {
+            console.log(`${indentation}N${node.index}`);
             // Print the structure recursively for each successor
-            for (const successor of vertex.successors) {
-                this.printMDDStructure(successor, levelOfVertex + 1);
+            for (const successor of node.successors) {
+                this.printMDDStructure(successor, levelOfNode + 1);
             }
-        } else if (vertex instanceof ResultVertex) {
-            // If the vertex is an instance of ResultVertex, print "RV" followed by its resultValue
-            console.log(`${indentation}RV${vertex.resultValue}`);
+        } else if (node instanceof TerminalNode) {
+            console.log(`${indentation}TN${node.resultValue}`);
         } else {
-            console.error('ERROR: Not a vertex or resultVertex.'); // Print an error message if the vertex type is invalid
+            console.error('ERROR: Not an InternalNode or TerminalNode.'); // Print an error message if the node type is invalid
         }
     }
 }
 
 
 // TESTS************************************
-/*const vertex1 = new Vertex(1);
-const vertex2 = new Vertex(2);
-const vertex3 = new Vertex(3);
-const vertex4 = new Vertex(4);
-const vertex5 = new Vertex(5);
+/*const vertex1 = new InternalNode(1);
+const vertex2 = new InternalNode(2);
+const vertex3 = new InternalNode(3);
+const vertex4 = new InternalNode(4);
+const vertex5 = new InternalNode(5);
 
 vertex1.addSuccessor(vertex2);
 vertex1.addSuccessor(vertex3);
@@ -208,57 +207,56 @@ vertex2.addSuccessor(vertex5);
 const mdd = new MDD(vertex1);
 mdd.printMDDStructure(vertex1)*/
 
+//Test on decision diagram from Picture 2.2 from thesis.
+const internalNode0 = new InternalNode(0);
+const internalNode11 = new InternalNode(1);
+const internalNode12 = new InternalNode(1);
+const internalNode21 = new InternalNode(2);
+const internalNode22 = new InternalNode(2);
 
-/*const vertex1 = new Vertex(1);
-const vertex2 = new Vertex(2);
-const vertex3 = new Vertex(3);
-const vertex4 = new Vertex(4);
-const vertex5 = new Vertex(5);
-const vertex6 = new Vertex(6);
-const vertex7 = new Vertex(7);
-const vertex8 = new Vertex(8);
-const vertex9 = new Vertex(9);
-const vertex10 = new Vertex(10);
-const vertex11 = new Vertex(11);
-
-const resultVertex1 = new ResultVertex(1);
-const resultVertex2 = new ResultVertex(2);
-const resultVertex3 = new ResultVertex(3);
-const resultVertex4 = new ResultVertex(4);
+const resultInternalNode0 = new TerminalNode(1);
+const resultInternalNode1 = new TerminalNode(0);
+const resultInternalNode2 = new TerminalNode(2);
 
 // Define the structure of the diagram
-vertex1.addSuccessor(vertex2);
-vertex1.addSuccessor(vertex3);
-vertex2.addSuccessor(vertex4);
-vertex2.addSuccessor(vertex5);
-vertex4.addSuccessor(vertex6);
-vertex4.addSuccessor(vertex7);
-vertex5.addSuccessor(vertex8);
-vertex5.addSuccessor(vertex9);
-vertex8.addSuccessor(vertex10);
-vertex9.addSuccessor(vertex11);
+internalNode0.addSuccessor(internalNode11);
+internalNode0.addSuccessor(internalNode12);
+internalNode11.addSuccessor(resultInternalNode1);
+internalNode11.addSuccessor(internalNode21);
+internalNode12.addSuccessor(internalNode21);
+internalNode12.addSuccessor(internalNode22);
 
-vertex6.addSuccessor(resultVertex1);
-vertex7.addSuccessor(resultVertex2);
-vertex10.addSuccessor(resultVertex3);
-vertex11.addSuccessor(resultVertex4);
+internalNode21.addSuccessor(resultInternalNode1);
+internalNode21.addSuccessor(resultInternalNode0);
+internalNode21.addSuccessor(resultInternalNode0);
+internalNode22.addSuccessor(resultInternalNode1);
+internalNode22.addSuccessor(resultInternalNode2);
+internalNode22.addSuccessor(resultInternalNode2);
 
-// Create the MDD with the root vertex
-const mdd = new MDD(vertex1);
-//mdd.printMDDStructure(vertex1);
-mdd.evaluateAndPrintPath([0, 1, 0, 0, 0]);*/
+// Create the MDD with the root internal node
+const mdd = new MDD(internalNode0);
+//mdd.printMDDStructure(internalNode0);
+mdd.evaluateAndPrintPath([1, 0, 2]);
 
-/*const vertex1 = new Vertex(1);
-const vertex2 = new Vertex(2);
-const vertex3 = new Vertex(3);
-const vertex4 = new Vertex(4);
-const vertex5 = new Vertex(5);
-const vertex6 = new Vertex(6);
-const vertex7 = new Vertex(7);
-const vertex8 = new Vertex(8);
-const vertex9 = new Vertex(9);
-const vertex10 = new Vertex(10);
-const vertex11 = new Vertex(11);
+
+/*const internalNode1 = new InternalNode(0);
+const internalNode2 = new InternalNode(1);
+internalNode1.addSuccessor(internalNode2);
+const mdd = new MDD(internalNode1);
+
+mdd.evaluate([1]);*/
+
+/*const vertex1 = new InternalNode(1);
+const vertex2 = new InternalNode(2);
+const vertex3 = new InternalNode(3);
+const vertex4 = new InternalNode(4);
+const vertex5 = new InternalNode(5);
+const vertex6 = new InternalNode(6);
+const vertex7 = new InternalNode(7);
+const vertex8 = new InternalNode(8);
+const vertex9 = new InternalNode(9);
+const vertex10 = new InternalNode(10);
+const vertex11 = new InternalNode(11);
 
 const resultVertex1 = new ResultVertex(1);
 const resultVertex2 = new ResultVertex(2);
@@ -288,4 +286,4 @@ const mdd = new MDD(vertex1);
 // Call evaluateAndPrintPath with valid steps
 const result = mdd.evaluateAndPrintPath([0, 1, 0, 0, 0]);*/
 
-module.exports = { Vertex, ResultVertex, MDD };
+module.exports = { InternalNode, TerminalNode, MDD };

@@ -1,8 +1,7 @@
-const { Vertex, ResultVertex, MDD } = require('../app/diagram'); // Imports the Vertex, ResultVertex and MDD class from diagram.js class.
+const { InternalNode, TerminalNode, MDD } = require('../app/diagram'); // Imports the InternalNode, TerminalNode and MDD class from diagram.js class.
 
 /**
  *  README README README README README README README README README README README README README README
- *  !!!!!!!!!!!!!!!!!!!!!!!! To run tests, write "npx jest" in the terminal. !!!!!!!!!!!!!!!!!!!!!!!!
  *  For these tests to work:
  *  1. Install node.js from web.
  *  2. Execute "npm install --save-dev jest" in terminal here to install jest.
@@ -10,281 +9,242 @@ const { Vertex, ResultVertex, MDD } = require('../app/diagram'); // Imports the 
  *  README README README README README README README README README README README README README README
  */
 
-
-// Vertex here is the name of the test suite. (group of related test cases for a specific part of the code)
-describe('Vertex', () => {
+describe('InternalNode', () => {
     it('should have the correct index', () => {
-        const vertex = new Vertex(42); // Create a Vertex with index 42
-        expect(vertex.index).toBe(42); // Check if the index is 42
+        const internalNode = new InternalNode(42);
+        expect(internalNode.index).toBe(42);
     });
 
-    it('should return 0 for a new vertex without successors', () => {
-        const vertex = new Vertex(1);
-        expect(vertex.getSuccessorsCount()).toBe(0);
+    it('should return 0 for a new InternalNode without successors', () => {
+        const internalNode = new InternalNode(1);
+        expect(internalNode.getSuccessorsCount()).toBe(0);
     });
 
     it('should return the number of successors added', () => {
-        const vertex1 = new Vertex(1);
-        const vertex2 = new Vertex(2);
-        const vertex3 = new Vertex(3);
+        const internalNode0 = new InternalNode(1);
+        const internalNode1 = new InternalNode(2);
+        const internalNode2 = new InternalNode(3);
 
-        vertex1.addSuccessor(vertex2);
-        vertex1.addSuccessor(vertex3);
+        internalNode0.addSuccessor(internalNode1);
+        internalNode0.addSuccessor(internalNode2);
 
-        expect(vertex1.getSuccessorsCount()).toBe(2);
+        expect(internalNode0.getSuccessorsCount()).toBe(2);
     });
 
     it('should return a successor based on its index', () => {
-        const vertex1 = new Vertex(1);
-        const vertex2 = new Vertex(2);
-        const vertex3 = new Vertex(3);
+        const internalNode0 = new InternalNode(1);
+        const internalNode1 = new InternalNode(2);
+        const internalNode2 = new InternalNode(3);
 
-        vertex1.addSuccessor(vertex2);
-        vertex1.addSuccessor(vertex3);
+        internalNode0.addSuccessor(internalNode1);
+        internalNode0.addSuccessor(internalNode2);
 
-        const successor = vertex1.getSuccessor(1);
-        expect(successor).toBe(vertex3);
+        const successor = internalNode0.getSuccessor(1);
+        expect(successor).toBe(internalNode2);
     });
 
     it('should return null for an invalid successor index', () => {
-        const vertex1 = new Vertex(1);
+        const internalNode = new InternalNode(1);
 
-        const successor = vertex1.getSuccessor(1);
+        const successor = internalNode.getSuccessor(1);
         expect(successor).toBeNull();
     });
 });
 
 describe('MDD', () => {
-    it('should print the MDD structure consisting of only Vertexes correctly', () => {
-        const vertex1 = new Vertex(1);
-        const vertex2 = new Vertex(2);
-        const vertex3 = new Vertex(3);
-        const vertex4 = new Vertex(4);
-        const vertex5 = new Vertex(5);
+    it('should print the MDD structure consisting of only InternalNodes correctly', () => {
+        const internalNode0 = new InternalNode(1);
+        const internalNode1 = new InternalNode(2);
+        const internalNode2 = new InternalNode(3);
+        const internalNode3 = new InternalNode(4);
+        const internalNode4 = new InternalNode(5);
 
-        vertex1.addSuccessor(vertex2);
-        vertex1.addSuccessor(vertex3);
-        vertex1.addSuccessor(vertex4);
-        vertex2.addSuccessor(vertex5);
+        internalNode0.addSuccessor(internalNode1);
+        internalNode0.addSuccessor(internalNode2);
+        internalNode0.addSuccessor(internalNode3);
+        internalNode1.addSuccessor(internalNode4);
 
-        const mdd = new MDD(vertex1);
+        const mdd = new MDD(internalNode0);
 
         const consoleSpy = jest.spyOn(console, 'log');
-        mdd.printMDDStructure(vertex1); // Call printMDDStructure with the root vertex
+        mdd.printMDDStructure(internalNode0);
 
-        // Expectations for Vertexes only
+        // Expectations for InternalNodes only
         expect(consoleSpy).toHaveBeenCalledTimes(5);
-        expect(consoleSpy).toHaveBeenNthCalledWith(1, 'V1');
-        expect(consoleSpy).toHaveBeenNthCalledWith(2, '  V2');
-        expect(consoleSpy).toHaveBeenNthCalledWith(3, '    V5');
-        expect(consoleSpy).toHaveBeenNthCalledWith(4, '  V3');
-        expect(consoleSpy).toHaveBeenNthCalledWith(5, '  V4');
+        expect(consoleSpy).toHaveBeenNthCalledWith(1, 'N1');
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, '  N2');
+        expect(consoleSpy).toHaveBeenNthCalledWith(3, '    N5');
+        expect(consoleSpy).toHaveBeenNthCalledWith(4, '  N3');
+        expect(consoleSpy).toHaveBeenNthCalledWith(5, '  N4');
 
         consoleSpy.mockRestore();
     });
 
-    it('should print the MDD structure consisting of both Vertexes and ResultVertexes correctly', () => {
-        const vertex1 = new Vertex(1);
-        const vertex2 = new Vertex(2);
-        const vertex3 = new Vertex(3);
-        const vertex4 = new Vertex(4);
-        const vertex5 = new Vertex(5);
-        const vertex6 = new Vertex(6);
-        const vertex7 = new Vertex(7);
-        const vertex8 = new Vertex(8);
-        const vertex9 = new Vertex(9);
-        const vertex10 = new Vertex(10);
-        const vertex11 = new Vertex(11);
+    it('should print the MDD structure consisting of both InternalNodes and TerminalNodes correctly', () => {
+        const internalNode0 = new InternalNode(1);
+        const internalNode1 = new InternalNode(2);
+        const internalNode2 = new InternalNode(3);
+        const internalNode3 = new InternalNode(4);
+        const internalNode4 = new InternalNode(5);
+        const internalNode5 = new InternalNode(6);
+        const internalNode6 = new InternalNode(7);
+        const internalNode7 = new InternalNode(8);
+        const internalNode8 = new InternalNode(9);
+        const internalNode9 = new InternalNode(10);
+        const internalNode10 = new InternalNode(11);
 
-        const resultVertex1 = new ResultVertex(1);
-        const resultVertex2 = new ResultVertex(2);
-        const resultVertex3 = new ResultVertex(3);
-        const resultVertex4 = new ResultVertex(4);
+        const terminalNode0 = new TerminalNode(1);
+        const terminalNode1 = new TerminalNode(2);
+        const terminalNode2 = new TerminalNode(3);
+        const terminalNode3 = new TerminalNode(4);
 
-        vertex1.addSuccessor(vertex2);
-        vertex1.addSuccessor(vertex3);
-        vertex2.addSuccessor(vertex4);
-        vertex2.addSuccessor(vertex5);
-        vertex4.addSuccessor(vertex6);
-        vertex4.addSuccessor(vertex7);
-        vertex5.addSuccessor(vertex8);
-        vertex5.addSuccessor(vertex9);
-        vertex8.addSuccessor(vertex10);
-        vertex9.addSuccessor(vertex11);
+        internalNode0.addSuccessor(internalNode1);
+        internalNode0.addSuccessor(internalNode2);
+        internalNode1.addSuccessor(internalNode3);
+        internalNode1.addSuccessor(internalNode4);
+        internalNode3.addSuccessor(internalNode5);
+        internalNode3.addSuccessor(internalNode6);
+        internalNode4.addSuccessor(internalNode7);
+        internalNode4.addSuccessor(internalNode8);
+        internalNode7.addSuccessor(internalNode9);
+        internalNode8.addSuccessor(internalNode10);
 
-        vertex6.addSuccessor(resultVertex1);
-        vertex7.addSuccessor(resultVertex2);
-        vertex10.addSuccessor(resultVertex3);
-        vertex11.addSuccessor(resultVertex4);
+        internalNode5.addSuccessor(terminalNode0);
+        internalNode6.addSuccessor(terminalNode1);
+        internalNode9.addSuccessor(terminalNode2);
+        internalNode10.addSuccessor(terminalNode3);
 
-        const mdd = new MDD(vertex1);
+        const mdd = new MDD(internalNode0);
 
         const consoleSpy = jest.spyOn(console, 'log');
-        mdd.printMDDStructure(vertex1); // Call printMDDStructure with the root vertex
+        mdd.printMDDStructure(internalNode0);
 
-        // Expectations for both Vertexes and ResultVertexes
-        expect(consoleSpy).toHaveBeenCalledTimes(15); // Total vertices including ResultVertexes
-        expect(consoleSpy).toHaveBeenNthCalledWith(1, 'V1');
-        expect(consoleSpy).toHaveBeenNthCalledWith(2, '  V2');
-        expect(consoleSpy).toHaveBeenNthCalledWith(3, '    V4');
-        expect(consoleSpy).toHaveBeenNthCalledWith(4, '      V6');
-        expect(consoleSpy).toHaveBeenNthCalledWith(5, '        RV1');
-        expect(consoleSpy).toHaveBeenNthCalledWith(6, '      V7');
-        expect(consoleSpy).toHaveBeenNthCalledWith(7, '        RV2');
-        expect(consoleSpy).toHaveBeenNthCalledWith(8, '    V5');
-        expect(consoleSpy).toHaveBeenNthCalledWith(9, '      V8');
-        expect(consoleSpy).toHaveBeenNthCalledWith(10, '        V10');
-        expect(consoleSpy).toHaveBeenNthCalledWith(11, '          RV3');
-        expect(consoleSpy).toHaveBeenNthCalledWith(12, '      V9');
+        expect(consoleSpy).toHaveBeenCalledTimes(15);
+        expect(consoleSpy).toHaveBeenNthCalledWith(1, 'N1');
+        expect(consoleSpy).toHaveBeenNthCalledWith(2, '  N2');
+        expect(consoleSpy).toHaveBeenNthCalledWith(3, '    N4');
+        expect(consoleSpy).toHaveBeenNthCalledWith(4, '      N6');
+        expect(consoleSpy).toHaveBeenNthCalledWith(5, '        TN1');
+        expect(consoleSpy).toHaveBeenNthCalledWith(6, '      N7');
+        expect(consoleSpy).toHaveBeenNthCalledWith(7, '        TN2');
+        expect(consoleSpy).toHaveBeenNthCalledWith(8, '    N5');
+        expect(consoleSpy).toHaveBeenNthCalledWith(9, '      N8');
+        expect(consoleSpy).toHaveBeenNthCalledWith(10, '        N10');
+        expect(consoleSpy).toHaveBeenNthCalledWith(11, '          TN3');
+        expect(consoleSpy).toHaveBeenNthCalledWith(12, '      N9');
 
         consoleSpy.mockRestore();
     });
 
 
-    it('should evaluate steps correctly and return a ResultVertex for evaluate', () => {
-        // Create vertices for the diagram
-        const vertex1 = new Vertex(1);
-        const vertex2 = new Vertex(2);
-        const vertex3 = new Vertex(3);
-        const vertex4 = new Vertex(4);
-        const vertex5 = new Vertex(5);
-        const vertex6 = new Vertex(6);
-        const vertex7 = new Vertex(7);
-        const vertex8 = new Vertex(8);
-        const vertex9 = new Vertex(9);
-        const vertex10 = new Vertex(10);
-        const vertex11 = new Vertex(11);
+    it('should evaluate decisions correctly and return a TerminalNode for evaluate', () => {
 
-        const resultVertex1 = new ResultVertex(1);
-        const resultVertex2 = new ResultVertex(2);
-        const resultVertex3 = new ResultVertex(3);
-        const resultVertex4 = new ResultVertex(4);
+        // Create internalNodes for the diagram
+        const internalNode0 = new InternalNode(0);
+        const internalNode11 = new InternalNode(1);
+        const internalNode12 = new InternalNode(1);
+        const internalNode21 = new InternalNode(2);
+        const internalNode22 = new InternalNode(2);
+
+        const terminalNode0 = new TerminalNode(1);
+        const terminalNode1 = new TerminalNode(0);
+        const terminalNode2 = new TerminalNode(2);
 
         // Define the structure of the diagram
-        vertex1.addSuccessor(vertex2);
-        vertex1.addSuccessor(vertex3);
-        vertex2.addSuccessor(vertex4);
-        vertex2.addSuccessor(vertex5);
-        vertex4.addSuccessor(vertex6);
-        vertex4.addSuccessor(vertex7);
-        vertex5.addSuccessor(vertex8);
-        vertex5.addSuccessor(vertex9);
-        vertex8.addSuccessor(vertex10);
-        vertex9.addSuccessor(vertex11);
+        internalNode0.addSuccessor(internalNode11);
+        internalNode0.addSuccessor(internalNode12);
+        internalNode11.addSuccessor(terminalNode1);
+        internalNode11.addSuccessor(internalNode21);
+        internalNode12.addSuccessor(internalNode21);
+        internalNode12.addSuccessor(internalNode22);
 
-        vertex6.addSuccessor(resultVertex1);
-        vertex7.addSuccessor(resultVertex2);
-        vertex10.addSuccessor(resultVertex3);
-        vertex11.addSuccessor(resultVertex4);
+        internalNode21.addSuccessor(terminalNode1);
+        internalNode21.addSuccessor(terminalNode0);
+        internalNode21.addSuccessor(terminalNode0);
+        internalNode22.addSuccessor(terminalNode1);
+        internalNode22.addSuccessor(terminalNode2);
+        internalNode22.addSuccessor(terminalNode2);
 
-        // Create the MDD with the root vertex
-        const mdd = new MDD(vertex1);
+        const mdd = new MDD(internalNode0);
 
-        // Call evaluate with valid steps
-        const result = mdd.evaluate([0, 1, 0, 0, 0]);
+        const result = mdd.evaluate([1, 0, 2]);
 
-        // Check if the result is a ResultVertex
-        expect(result instanceof ResultVertex).toBe(true);
-        // Check if the value of the ResultVertex is correct
-        expect(result.resultValue).toBe(3);
+        expect(result instanceof TerminalNode).toBe(true);
+        expect(result.resultValue).toBe(1);
     });
 
-    it('should evaluate steps correctly, print path and return a ResultVertex for evaluateAndPrintPath', () => {
-        // Create vertices for the diagram
-        const vertex1 = new Vertex(1);
-        const vertex2 = new Vertex(2);
-        const vertex3 = new Vertex(3);
-        const vertex4 = new Vertex(4);
-        const vertex5 = new Vertex(5);
-        const vertex6 = new Vertex(6);
-        const vertex7 = new Vertex(7);
-        const vertex8 = new Vertex(8);
-        const vertex9 = new Vertex(9);
-        const vertex10 = new Vertex(10);
-        const vertex11 = new Vertex(11);
+    it('should evaluate decisions correctly, print path and return a TerminalNode for evaluateAndPrintPath', () => {
+        // Test data from decision diagram from Picture 2.2 from thesis.
+        const internalNode0 = new InternalNode(0);
+        const internalNode11 = new InternalNode(1);
+        const internalNode12 = new InternalNode(1);
+        const internalNode21 = new InternalNode(2);
+        const internalNode22 = new InternalNode(2);
 
-        const resultVertex1 = new ResultVertex(1);
-        const resultVertex2 = new ResultVertex(2);
-        const resultVertex3 = new ResultVertex(3);
-        const resultVertex4 = new ResultVertex(4);
+        const resultInternalNode0 = new TerminalNode(1);
+        const resultInternalNode1 = new TerminalNode(0);
+        const resultInternalNode2 = new TerminalNode(2);
 
         // Define the structure of the diagram
-        vertex1.addSuccessor(vertex2);
-        vertex1.addSuccessor(vertex3);
-        vertex2.addSuccessor(vertex4);
-        vertex2.addSuccessor(vertex5);
-        vertex4.addSuccessor(vertex6);
-        vertex4.addSuccessor(vertex7);
-        vertex5.addSuccessor(vertex8);
-        vertex5.addSuccessor(vertex9);
-        vertex8.addSuccessor(vertex10);
-        vertex9.addSuccessor(vertex11);
+        internalNode0.addSuccessor(internalNode11);
+        internalNode0.addSuccessor(internalNode12);
+        internalNode11.addSuccessor(resultInternalNode1);
+        internalNode11.addSuccessor(internalNode21);
+        internalNode12.addSuccessor(internalNode21);
+        internalNode12.addSuccessor(internalNode22);
 
-        vertex6.addSuccessor(resultVertex1);
-        vertex7.addSuccessor(resultVertex2);
-        vertex10.addSuccessor(resultVertex3);
-        vertex11.addSuccessor(resultVertex4);
+        internalNode21.addSuccessor(resultInternalNode1);
+        internalNode21.addSuccessor(resultInternalNode0);
+        internalNode21.addSuccessor(resultInternalNode0);
+        internalNode22.addSuccessor(resultInternalNode1);
+        internalNode22.addSuccessor(resultInternalNode2);
+        internalNode22.addSuccessor(resultInternalNode2);
 
-        // Create the MDD with the root vertex
-        const mdd = new MDD(vertex1);
+        const mdd = new MDD(internalNode0);
 
-        // Spy on console.log to capture the printed path
         const consoleSpy = jest.spyOn(console, 'log');
 
-        // Call evaluateAndPrintPath with valid steps
-        const result = mdd.evaluateAndPrintPath([0, 1, 0, 0, 0]);
+        const result = mdd.evaluateAndPrintPath([1, 0, 2]);
 
-        // Check if the result is a ResultVertex
-        expect(result instanceof ResultVertex).toBe(true);
-        // Check if the value of the ResultVertex is correct
-        expect(result.resultValue).toBe(3);
+        expect(result instanceof TerminalNode).toBe(true);
+        expect(result.resultValue).toBe(1);
 
-        // Check if console.log was called with the correct path
         expect(consoleSpy).toHaveBeenCalledWith('---Path through the diagram---');
-        expect(consoleSpy).toHaveBeenCalledWith('V1 -> V2 -> V5 -> V8 -> V10 -> RV3');
+        expect(consoleSpy).toHaveBeenCalledWith('N0 -> N1 -> N2 -> TN1');
 
-        // Restore the original console.log function
         consoleSpy.mockRestore();
     });
 
 
-    it('should print an error message when an invalid step is provided in evaluate', () => {
-        const vertex1 = new Vertex(1);
-        const vertex2 = new Vertex(2);
-        vertex1.addSuccessor(vertex2);
-        const mdd = new MDD(vertex1);
+    it('should print an error message when an invalid decision is provided in evaluate', () => {
+        const internalNode0 = new InternalNode(0);
+        const internalNode1 = new InternalNode(1);
+        internalNode0.addSuccessor(internalNode1);
+        const mdd = new MDD(internalNode0);
 
-        // Spy on console.error to capture the error message
         const consoleErrorSpy = jest.spyOn(console, 'error');
 
-        // Call evaluate with an invalid step
         mdd.evaluate([1]);
 
-        // Check if console.error was called with the expected error message
         expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Invalid step 1 at vertex 1');
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Invalid decision at node index 0: Either the decision exceeds the number of node\'s successors or it is beyond the provided decisions\' scope.');
 
-        // Restore the original console.error function
         consoleErrorSpy.mockRestore();
     });
 
-    it('should print an error message when an invalid step is provided in evaluateAndPrintPath', () => {
-        const vertex1 = new Vertex(1);
-        const vertex2 = new Vertex(2);
-        vertex1.addSuccessor(vertex2);
-        const mdd = new MDD(vertex1);
+    it('should print an error message when an invalid decision is provided in evaluateAndPrintPath', () => {
+        const internalNode0 = new InternalNode(0);
+        const internalNode1 = new InternalNode(1);
+        internalNode0.addSuccessor(internalNode1);
+        const mdd = new MDD(internalNode0);
 
-        // Spy on console.error to capture the error message
         const consoleErrorSpy = jest.spyOn(console, 'error');
 
-        // Call evaluateAndPrintPath with an invalid step
         mdd.evaluateAndPrintPath([1]);
 
-        // Check if console.error was called with the expected error message
         expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-        expect(consoleErrorSpy).toHaveBeenCalledWith('Invalid step 1 at vertex 1');
+        expect(consoleErrorSpy).toHaveBeenCalledWith('Invalid decision at node index 0: Either the decision exceeds the number of node\'s successors or it is beyond the provided decisions\' scope.');
 
-        // Restore the original console.error function
         consoleErrorSpy.mockRestore();
     });
 });
