@@ -1,8 +1,9 @@
 /**
  * Changelog:
- * -Added table.js (generating and printing function implemented)
- * -Reworked evaluate method in diagram.
- * -Refactoring of names. ResultVertex is now TerminalNode. InternalNode is now InternalVertex.
+ * -Table:
+ *      -Added evaluation.
+ *      -Extracted creating staging table from generateTable, so it can be used outside its scope, e.g. in evaluate.
+ *      -Added tests for table
  */
 
 /**

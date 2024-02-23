@@ -1,11 +1,11 @@
-const { InternalNode, TerminalNode, MDD } = require('../app/diagram'); // Imports the InternalNode, TerminalNode and MDD class from diagram.js class.
+const { InternalNode, TerminalNode, MDD } = require('../app/diagram'); // Imports the InternalNode, TerminalNode and MDD class from diagram.js.
 
 /**
  *  README README README README README README README README README README README README README README
  *  For these tests to work:
  *  1. Install node.js from web.
  *  2. Execute "npm install --save-dev jest" in terminal here to install jest.
- *  3. Launch tests using "npx jest" in terminal.
+ *  3. Launch tests using "npx jest" in terminal. npx jest --verbose prints detailed info about tests.
  *  README README README README README README README README README README README README README README
  */
 
