@@ -1,4 +1,5 @@
 const { TruthTable } = require('../app/table'); // Imports the TruthTable class from table.js.
+const { TerminalNode, InternalNode } = require('../app/diagram'); // Imports the TruthTable class from table.js.
 
 describe('TruthTable - Table generating and printing', () => {
     it('should generate and print correct binary truth table for 2 variables.', () => {
@@ -116,4 +117,73 @@ describe('TruthTable - Table evaluation', () => {
         expect(tableOfTruth.evaluate([1, 1, 1])).toBe(2);
         expect(tableOfTruth.evaluate([1, 1, 2])).toBe(2);
     });
+});
+
+describe('TruthTable - fromTable', () => {
+    it('should create only one TerminalNode for each value', () => {
+        const tableOfTruth = new TruthTable();
+
+        // Call createTerminalNode multiple times with the same argument
+        tableOfTruth.createTerminalNode(1);
+        tableOfTruth.createTerminalNode(0);
+        tableOfTruth.createTerminalNode(0);
+        tableOfTruth.createTerminalNode(1);
+        tableOfTruth.createTerminalNode(2);
+        tableOfTruth.createTerminalNode(1);
+        tableOfTruth.createTerminalNode(2);
+        tableOfTruth.createTerminalNode(0);
+        tableOfTruth.createTerminalNode(1);
+        tableOfTruth.createTerminalNode(1);
+        tableOfTruth.createTerminalNode(2);
+
+        // Assert that only three TerminalNode were created.
+        expect(tableOfTruth._terminalTable.size).toBe(3);
+
+        // Assert that TerminalNodes have been created.
+        expect(tableOfTruth._terminalTable.get(0)).toBeInstanceOf(TerminalNode);
+        expect(tableOfTruth._terminalTable.get(1)).toBeInstanceOf(TerminalNode);
+        expect(tableOfTruth._terminalTable.get(2)).toBeInstanceOf(TerminalNode);
+
+        // Assert the values of created terminalNodes.
+        expect(tableOfTruth._terminalTable.get(0).value).toBe(0);
+        expect(tableOfTruth._terminalTable.get(1).value).toBe(1);
+        expect(tableOfTruth._terminalTable.get(2).value).toBe(2);
+    });
+
+    it('should create only one InternalNode for each specific node instance, as no duplicates are allowed.', () => {
+        // Initialize a test TruthTable instance
+        const tableOfTruth = new TruthTable();
+
+        // Create diagram structure in a bottom-up manner.
+        tableOfTruth.createTerminalNode(0);
+        tableOfTruth.createTerminalNode(1);
+        tableOfTruth.createTerminalNode(2);
+
+        tableOfTruth.createInternalNode(1, [tableOfTruth._terminalTable.get(0), tableOfTruth._terminalTable.get(1)]);
+        tableOfTruth.createInternalNode(1, [tableOfTruth._terminalTable.get(1), tableOfTruth._terminalTable.get(2)]);
+
+        tableOfTruth.createInternalNode(1, [tableOfTruth._terminalTable.get(1), tableOfTruth._terminalTable.get(2)]);
+        tableOfTruth.createInternalNode(1, [tableOfTruth._terminalTable.get(0), tableOfTruth._terminalTable.get(1)]);
+        // Assert that the size of the internalTable is 2, meaning five internalNodes were created.
+        expect(tableOfTruth._internalTable.size).toBe(2);
+    });
+
+    it('should not create any InternalNode, as they will be redundant (all their edges are leading to the same node).', () => {
+        // Initialize a test TruthTable instance
+        const tableOfTruth = new TruthTable();
+
+        // Create diagram structure in a bottom-up manner.
+        tableOfTruth.createTerminalNode(0);
+        tableOfTruth.createTerminalNode(1);
+        tableOfTruth.createTerminalNode(2);
+
+        tableOfTruth.createInternalNode(1, [tableOfTruth._terminalTable.get(2)]);
+        tableOfTruth.createInternalNode(2, [tableOfTruth._terminalTable.get(1)]);
+        tableOfTruth.createInternalNode(2, [tableOfTruth._terminalTable.get(2)]);
+        tableOfTruth.createInternalNode(1, [tableOfTruth._terminalTable.get(2)]);
+        tableOfTruth.createInternalNode(1, [tableOfTruth._terminalTable.get(1)]);
+        // Assert that the size of the internalTable is 0, as no internalNode should have been created.
+        expect(tableOfTruth._internalTable.size).toBe(0);
+    });
+
 });

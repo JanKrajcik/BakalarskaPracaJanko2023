@@ -1,9 +1,14 @@
 /**
  * Changelog:
  * -Table:
- *      -Added evaluation.
- *      -Extracted creating staging table from generateTable, so it can be used outside its scope, e.g. in evaluate.
- *      -Added tests for table
+ *      -isRedundant()
+ *      -createTerminalNode()
+ *      -createInternalNode()
+ *      -Tests for all of these functions.
+ * -Diagram:
+ *      -InternalNode has new function equals, which evaluates, whether argument and this InternalNode have same successors and index.
+ *      -MDD has to be crated with InternalNode or TerminalNode as rootNode.
+ *      -Both internal and TerminalNode have toString() method implemented.
  */
 
 /**
@@ -77,6 +82,44 @@ class InternalNode {
         }
     }
 
+    /**
+     * Method to check if this InternalNode is equal to another InternalNode.
+     * @param {InternalNode} other - The other InternalNode to compare with.
+     * @returns {boolean} - True if the indices and successors of the InternalNodes are equal, else false.
+     */
+    equals(other) {
+        if (!(other instanceof InternalNode) &&  // Check if other is an instance of InternalNode
+                    this.index !== other.index &&  // Check if the indices of this InternalNode and the other InternalNode are equal
+                            this.successors.length !== other.successors.length) { // Check if other and this have same amount of successors.
+            return false;
+        }
+        // Check if the successors of this InternalNode and the other InternalNode are equal
+        // Successors are considered equal if they are the same instances in the same order
+        for (let i = 0; i < this.successors.length; i++) {
+            if (!this.successors[i].equals(other.successors[i])) {
+                return false;
+            }
+        }
+        return true;  // If all checks passed, return true
+    }
+
+    /**
+     * Returns a string representation of the InternalNode, including its index and indices of its successors.
+     * InternalNode indices are prefixed with 'N', and TerminalNode indices are prefixed with 'TN'.
+     * @returns {string} A string representation of the InternalNode.
+     */
+    toString() {
+        const successorIndices = this._successors.map(successor => {
+            if (successor instanceof InternalNode) {
+                return `N${successor.index}`;
+            } else if (successor instanceof TerminalNode) {
+                return `TN${successor.resultValue}`;
+            } else {
+                return 'UNKNOWN';
+            }
+        }).join(',');
+        return `N${this._index}:${successorIndices}`;
+    }
 }
 
 /**
@@ -91,6 +134,29 @@ class TerminalNode {
     get resultValue() {
         return this.value;
     }
+
+    /**
+     * Method to check if this TerminalNode is equal to another TerminalNode.
+     * @param {TerminalNode} other - The other TerminalNode to compare with.
+     * @returns {boolean} - True if the values of the TerminalNodes are equal, else false.
+     */
+    equals(other) {
+        // Check if other is an instance of TerminalNode
+        if (!(other instanceof TerminalNode)) {
+            return false;
+        }
+
+        // Compare the values of this TerminalNode and the other TerminalNode
+        return this.value === other.value;
+    }
+
+    /**
+     * Returns a string representation of the TerminalNode, which is its result value.
+     * @returns {string} A string representation of the TerminalNode.
+     */
+    toString() {
+        return this.value;
+    }
 }
 
 /**
@@ -98,8 +164,10 @@ class TerminalNode {
  * Stores root InternalNode of the diagram.
  */
 class MDD {
-    //TODO Creating MDD without a valid InternalNode should probably be prohibited somehow.
     constructor(rootNode) {
+        if (!rootNode instanceof InternalNode && !rootNode instanceof TerminalNode) {
+            return null;
+        }
         this._rootNode = rootNode;
     }
 
@@ -109,7 +177,7 @@ class MDD {
      * Each integer corresponds to the path to take at decision node at integers index.
      * For example, if the input array is [0,1,0], and the internal nodes in MDD are ordered
      * by index (node with index 0 is root node, only nodes with index 1 are successors of root node,
-     * only nodes with index 2 are sucessors of nodes with index 1,....) the variableValues would mean
+     * only nodes with index 2 are successors of nodes with index 1,....) the variableValues would mean
      * to take the first path at the root node, then the second path at its successor,
      * and finally the first path at the successor of the second node.
      * @param {number[]} variablesValues - An array of integers such as: [0,1,0,0,0,1] representing the decision variablesValues.
@@ -123,7 +191,7 @@ class MDD {
                 console.error(`Invalid decision at node index ${CurrentNode.index}: Either the decision exceeds the number of node's successors or it is beyond the provided decisions' scope.`);
                 return null;
             }
-            // Selects new CurrentNode from sucessors of CurrentNode.
+            // Selects new CurrentNode from successors of CurrentNode.
             // The decision that is made on CurrentNode is based on index of the CurrentNode.
             //     n-th variableValue (decision) is performed on n-th node.
             CurrentNode = CurrentNode.successors[variablesValues[CurrentNode.index]];
@@ -166,8 +234,6 @@ class MDD {
         return CurrentNode;
     }
 
-
-
     /**
      * Function to print the structure of the MDD recursively
      * @param {InternalNode|TerminalNode} node - The node being processed during the recursive calls.
@@ -209,35 +275,37 @@ const mdd = new MDD(vertex1);
 mdd.printMDDStructure(vertex1)*/
 
 //Test on decision diagram from Picture 2.2 from thesis.
-const internalNode0 = new InternalNode(0);
+/*const internalNode0 = new InternalNode(0);
 const internalNode11 = new InternalNode(1);
 const internalNode12 = new InternalNode(1);
 const internalNode21 = new InternalNode(2);
 const internalNode22 = new InternalNode(2);
 
-const resultInternalNode0 = new TerminalNode(1);
-const resultInternalNode1 = new TerminalNode(0);
-const resultInternalNode2 = new TerminalNode(2);
+const terminalNode0 = new TerminalNode(1);
+const terminalNode1 = new TerminalNode(0);
+const terminalNode2 = new TerminalNode(2);
 
 // Define the structure of the diagram
 internalNode0.addSuccessor(internalNode11);
 internalNode0.addSuccessor(internalNode12);
-internalNode11.addSuccessor(resultInternalNode1);
+internalNode11.addSuccessor(terminalNode1);
 internalNode11.addSuccessor(internalNode21);
 internalNode12.addSuccessor(internalNode21);
 internalNode12.addSuccessor(internalNode22);
 
-internalNode21.addSuccessor(resultInternalNode1);
-internalNode21.addSuccessor(resultInternalNode0);
-internalNode21.addSuccessor(resultInternalNode0);
-internalNode22.addSuccessor(resultInternalNode1);
-internalNode22.addSuccessor(resultInternalNode2);
-internalNode22.addSuccessor(resultInternalNode2);
+internalNode21.addSuccessor(terminalNode1);
+internalNode21.addSuccessor(terminalNode0);
+internalNode21.addSuccessor(terminalNode0);
+internalNode22.addSuccessor(terminalNode1);
+internalNode22.addSuccessor(terminalNode2);
+internalNode22.addSuccessor(terminalNode2);
 
-// Create the MDD with the root internal node
+
+console.log(internalNode11.toString());*/
+/*// Create the MDD with the root internal node
 const mdd = new MDD(internalNode0);
 //mdd.printMDDStructure(internalNode0);
-mdd.evaluateAndPrintPath([1, 0, 2]);
+mdd.evaluateAndPrintPath([1, 0, 2]);*/
 
 
 /*const internalNode1 = new InternalNode(0);

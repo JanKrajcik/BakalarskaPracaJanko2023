@@ -52,6 +52,18 @@ describe('InternalNode', () => {
 });
 
 describe('MDD', () => {
+    let consoleErrorSpy;
+
+    beforeAll(() => {
+        // Mock console.error
+        consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterAll(() => {
+        // Restore console.error
+        consoleErrorSpy.mockRestore();
+    });
+
     it('should print the MDD structure consisting of only InternalNodes correctly', () => {
         const internalNode0 = new InternalNode(1);
         const internalNode1 = new InternalNode(2);
