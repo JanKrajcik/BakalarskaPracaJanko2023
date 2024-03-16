@@ -1,4 +1,4 @@
-const { InternalNode, TerminalNode, MDD } = require('../app/diagram'); // Imports the InternalNode, TerminalNode and MDD class from diagram.js.
+const {InternalNode, TerminalNode, MDD} = require('../app/diagram'); // Imports the InternalNode, TerminalNode and MDD class from diagram.js.
 
 /**
  *  README README README README README README README README README README README README README README
@@ -56,7 +56,8 @@ describe('MDD', () => {
 
     beforeAll(() => {
         // Mock console.error
-        consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {
+        });
     });
 
     afterAll(() => {

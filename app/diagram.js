@@ -1,14 +1,8 @@
 /**
  * Changelog:
  * -Table:
- *      -isRedundant()
- *      -createTerminalNode()
- *      -createInternalNode()
- *      -Tests for all of these functions.
- * -Diagram:
- *      -InternalNode has new function equals, which evaluates, whether argument and this InternalNode have same successors and index.
- *      -MDD has to be crated with InternalNode or TerminalNode as rootNode.
- *      -Both internal and TerminalNode have toString() method implemented.
+ *      -factory methods extracted into separate NodeFactory class.
+ *      -fromVector method implemented.
  */
 
 /**
@@ -89,8 +83,8 @@ class InternalNode {
      */
     equals(other) {
         if (!(other instanceof InternalNode) &&  // Check if other is an instance of InternalNode
-                    this.index !== other.index &&  // Check if the indices of this InternalNode and the other InternalNode are equal
-                            this.successors.length !== other.successors.length) { // Check if other and this have same amount of successors.
+            this.index !== other.index &&  // Check if the indices of this InternalNode and the other InternalNode are equal
+            this.successors.length !== other.successors.length) { // Check if other and this have same amount of successors.
             return false;
         }
         // Check if the successors of this InternalNode and the other InternalNode are equal
@@ -187,7 +181,7 @@ class MDD {
         let CurrentNode = this._rootNode;
 
         while (!(CurrentNode instanceof TerminalNode)) {
-            if ((variablesValues.length-1) < CurrentNode.index || variablesValues[CurrentNode.index] > (CurrentNode.getSuccessorsCount() - 1)) {
+            if ((variablesValues.length - 1) < CurrentNode.index || variablesValues[CurrentNode.index] > (CurrentNode.getSuccessorsCount() - 1)) {
                 console.error(`Invalid decision at node index ${CurrentNode.index}: Either the decision exceeds the number of node's successors or it is beyond the provided decisions' scope.`);
                 return null;
             }
@@ -355,4 +349,4 @@ const mdd = new MDD(vertex1);
 // Call evaluateAndPrintPath with valid steps
 const result = mdd.evaluateAndPrintPath([0, 1, 0, 0, 0]);*/
 
-module.exports = { InternalNode, TerminalNode, MDD };
+module.exports = {InternalNode, TerminalNode, MDD};
