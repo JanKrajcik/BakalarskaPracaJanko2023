@@ -1,71 +1,41 @@
 const { TerminalNode, InternalNode } = require("./diagram");
+/**
+ * NodeFactory class responsible for creating nodes in the Multi-Decision Diagram (MDD).
+ */
 class NodeFactory {
+    /**
+     * Constructs a NodeFactory with maps for storing terminal and internal nodes.
+     */
     constructor() {
+        // Stores unique terminal nodes. Key is the value, value is TerminalNode object.
         this._terminalTable = new Map();
-        // Key is composite key made of index and successors. Value is InternalNode object.
+
+        // Stores unique internal nodes. Key is composite key made of index and successors, value is InternalNode object.
         this._internalTable = new Map();
-        //this._diagram = new Diagram();
     }
 
     /**
-     * Makes composite key out of index and successors array of a node.
-     *  It basically just creates one long string out of them.
+     * Generates a composite key for identifying internal nodes uniquely.
+     * This key combines an index with its successors to create a string representation,
+     * ensuring internal nodes with the same structure can be identified and reused.
      *
-     * @param index of a node
-     * @param successors of a node
-     * @returns {string} composite key - one long string of index and successors.
+     * @param {number} index - The index of the node.
+     * @param {Array} successors - An array representing the successors of the node.
+     * @returns {string} A composite key that uniquely identifies an internal node.
      */
     makeCompositeKey(index, successors = []) {
         const successorsString = successors.toString();
-        console.log(`${index}:${successorsString}`);
         return `${index}:${successorsString}`;
     }
 
     /**
-     * Determines if the current node is redundant by analyzing its successors.
+     * Checks if a node is considered redundant. A node is redundant if all its
+     * successors point to the same node, implying that any decision leads to the same outcome.
+     * Redundant nodes can be simplified to directly connect to the common successor node.
      *
-     * A redundant node is a node with all edges leading to the same node. Decisions in such a node
-     * will always result in the selection of the same successor (e.g., during evaluation). Therefore,
-     * there is no need to keep such node in the diagram.
-     *
-     * @param {(InternalNode|TerminalNode)[]} successors - The list of successors to be analyzed.
-     * @returns {boolean} - True if the node is redundant, false otherwise.
+     * @param {(InternalNode|TerminalNode)[]} successors - An array of node successors to check for redundancy.
+     * @returns {boolean} True if the node is redundant (all successors are the same instance), false otherwise.
      */
-    //This implementation was not good, it was comparing, whether two objects are have equal successors and recursively for their successors.
-    // while it should only check, whether they are the same instances.
-    /*isRedundant(successors = []) {
-        let currentSuccessor;
-        let i = 0;
-        let previousWasInstanceOfTerminalNode;
-        while (i <= successors.length) {
-            currentSuccessor = successors[i];
-            //If all the successors are not of the same type, node is certainly not redundant.
-            if(currentSuccessor.instanceOf(TerminalNode)) {
-                if (previousWasInstanceOfTerminalNode === false) {
-                    /!* If current successor is TerminalNode and previous was InternalNode, we have found successors of different
-                        types, which means, node is not redundant. *!/
-                    return false;
-                }
-                previousWasInstanceOfTerminalNode = true;
-            } else {
-                if (previousWasInstanceOfTerminalNode === true) {
-                    /!* If current successor is InternalNode and previous was TerminalNode, we have found successors of different
-                        types, which means, node is not redundant. *!/
-                    return false;
-                }
-                previousWasInstanceOfTerminalNode = false;
-            }
-            // If consecutive successors are of the same type, we have to check, whether they are the same.
-            if (!successors[i-1].equals(currentSuccessor)) {
-                // If consecutive successors are not the same, we can return, that the node isn't redundant.
-                return false;
-            }
-            i++;
-        }
-        return true; // If we haven't found any argument against node being redundant, we can say, it is redundant.
-    } */
-
-    //Corrected implementation.
     isRedundant(successors = []) {
         if (successors.length === 0) {
             // If there are no successors, the node cannot be redundant
@@ -86,9 +56,12 @@ class NodeFactory {
     }
 
     /**
-     * Factory function for the creation of terminal nodes.
-     * @param value
-     * @returns {TerminalNode|any}
+     * Creates or retrieves a terminal node with the specified value. Implements the Flyweight pattern by ensuring that
+     * for each unique value, only one terminal node exists in the system. This approach supports node reuse,
+     * minimizes memory consumption, and prevents the proliferation of duplicate terminal nodes.
+     *
+     * @param {*} value - The value for the terminal node.
+     * @returns {TerminalNode} A terminal node corresponding to the specified value.
      */
     createTerminalNode(value) {
         if (this._terminalTable.has(value)) {
@@ -101,10 +74,17 @@ class NodeFactory {
     }
 
     /**
-     * Factory functions for the creation of internal nodes
-     * @param index
-     * @param successors
-     * @returns {*}
+     * Creates or retrieves an internal node with the given index and successors, applying the Flyweight pattern
+     * to minimize memory usage by reusing existing nodes with the same structure. This method ensures uniqueness
+     * through the use of composite keys and supports the optimization of the diagram by preventing the creation
+     * of redundant nodes.
+     *
+     * If the successors indicate that the node would be redundant, it returns the first successor directly,
+     * further optimizing the diagram's structure.
+     *
+     * @param {number} index - The index of the node.
+     * @param {Array} successors - An array of successors for the node.
+     * @returns {InternalNode|TerminalNode} An internal node, or in the case of redundancy, the common successor node.
      */
     createInternalNode(index, successors = []) {
         let compositeKey = this.makeCompositeKey(index, successors);
@@ -120,6 +100,5 @@ class NodeFactory {
         }
     }
 }
-
 
 module.exports = { NodeFactory };

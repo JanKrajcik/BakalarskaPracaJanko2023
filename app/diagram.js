@@ -1,8 +1,6 @@
 /**
  * Changelog:
- * -Table:
- *      -factory methods extracted into separate NodeFactory class.
- *      -fromVector method implemented.
+ *  Refacotring of all the classes and tests, especiall comments.
  */
 
 /**
@@ -11,16 +9,14 @@
  *  successors (other instances of InternalNode class).
  */
 class InternalNode {
+    /**
+     * Constructs an InternalNode with the given index and optional successors.
+     * @param {number} index - The index of the InternalNode.
+     * @param {InternalNode[]} successors - An array of successor InternalNodes.
+     */
     constructor(index, successors = []) {
-        // Underscore before name of the variable means, that it is private. (It is just a que for programmer, JS ignores it.)
         this._index = index;
         this._successors = successors;
-        // Term sons could be used instead of successors, I like successors more, as they seem more appropriate to me.
-
-        // Edges are not needed here, the drawing method knows which edge is what number,
-        // as they are going to be in the due order here in successors array.
-        //PROBLEM - What if we want to have an edge with title 1, even though we only have one successor from the original InternalNode?
-        // Could be a problem with this architecture. Another option could be editing it only on drawing layer, which I'm not sure is the best way to do it.
     }
 
     // Getter for the InternalNode index
@@ -29,13 +25,8 @@ class InternalNode {
     }
 
     /**
-     * !!!! Needed for testing, DO NOT REMOVE !!!!
-     * It will probably be needed even outside the testing, as you have to create InternalNode,
-     * before you can use it as successor when creating another InternalNode.
-     * Another option will be, to create the diagram from the bottom, where successors
-     * already exist when creating another layer of InternalNodes closer to the root.
-     * Add successor to the _successors array.
-     * @param successor is another instance of InternalNode class.
+     * Adds a successor InternalNode to this InternalNode.
+     * @param {InternalNode|TerminalNode} successor - The InternalNode to add as a successor.
      */
     addSuccessor(successor) {
         this._successors.push(successor);
@@ -117,9 +108,13 @@ class InternalNode {
 }
 
 /**
- * Terminal node displaying the result value of the evaluation.
+ * Represents a terminal node in the MDD, displaying the result value of the evaluation.
  */
 class TerminalNode {
+    /**
+     * Constructs a TerminalNode with the given value.
+     * @param {*} value - The value that TerminalNode will represent.
+     */
     constructor(value) {
         this.value = value;
     }
@@ -158,6 +153,10 @@ class TerminalNode {
  * Stores root InternalNode of the diagram.
  */
 class MDD {
+    /**
+     * Constructs an MDD with the given root node.
+     * @param {InternalNode|TerminalNode} rootNode - The root node of the MDD.
+     */
     constructor(rootNode) {
         if (!rootNode instanceof InternalNode && !rootNode instanceof TerminalNode) {
             return null;

@@ -45,7 +45,6 @@ describe('InternalNode', () => {
 
     it('should return null for an invalid successor index', () => {
         const internalNode = new InternalNode(1);
-
         const successor = internalNode.getSuccessor(1);
         expect(successor).toBeNull();
     });

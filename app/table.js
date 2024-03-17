@@ -2,8 +2,15 @@
 const {/*TerminalNode, InternalNode,*/ MDD} = require("./diagram");
 const {NodeFactory} = require('./NodeFactory');
 
+/**
+ * Represents a Truth Table used for evaluating logical expressions.
+ */
 class TruthTable {
-
+    /**
+     * Constructs a TruthTable with the given domains and truth vector.
+     * @param {number[]} domains - An array representing the domains of variables.
+     * @param {number[]} truthVector - The truth vector for evaluation.
+     */
     constructor(domains = [], truthVector = []) {
         // Domains and offsets together are staging table needed for generating table and evaluating it.
         this._domains = domains;
@@ -14,9 +21,8 @@ class TruthTable {
 
         this._truthTable = null;
         this._truthVector = truthVector;
-        // Key is the value represented by the terminal node. Value is TerminalNode object.
 
-
+        // Node factory for creating nodes in the MDD
         this._nodeFactory = new NodeFactory();
     }
 
@@ -39,7 +45,7 @@ class TruthTable {
     }
 
     /**
-     * Creates array of offsets, which with domains create "staging table", which is used to generate table.
+     * Creates the staging table used for generating the truth table.
      * @returns {void}
      */
     createStagingTable() {
@@ -109,6 +115,10 @@ class TruthTable {
 
     // this method should have parameter truthVector, but we already
     // have access to it here, so we don't have to pass it.
+    /**
+     * Converts the truth vector and domains into an MDD (Multi-Decision Diagram) representation.
+     * @returns {MDD} - The MDD created based on truthVector and domains.
+     */
     fromVector() {
         // each line of stack contains a pair of [node, integer]
         let stack  = []; // push() to push, pop() to pop.
@@ -130,8 +140,37 @@ class TruthTable {
         return new MDD(root);
     }
 
+    /**
+     * Shrinks the stack to optimize redundant nodes while building the MDD.
+     * @param {Array[]} stack - The stack to shrink.
+     * @returns {void}
+     */
     shrinkStack(stack = []) {
         //TODO implement
+        while (true) {
+            let peekIndex = stack.length - 1;
+            let node = stack[peekIndex][0]; // "Peek" into the stack and retrieve just the node from the pair [node, integer].
+            let i = stack[peekIndex][1]; // "Peek" into the stack and retrieve just the integer from the pair [node, integer].
+            //TODO ask Michal if this description is correct VVVVVVVV
+            if (i === 1) return; // If we are at the root of the diagram, we have nothing to reduce???
+
+            let k = 0; // Used to peek k-th element from the top.
+            let count = 0;
+            let j; // Declared here for better performance.
+
+            do {
+                j = stack[peekIndex-k][1]; // Peek k-th (integer) element from the top of the stack.
+                if (j === i) count++;
+            } while (k < stack.length && i === j);
+            let miMinusOne = this._domains[i] - 1; // Size of the domain of the (i-1)-th element.
+            if (count < miMinusOne) return; // If count is smaller than size of the domain of the (i-1) -th element, return.
+            let successors = new Array[miMinusOne];
+            for (let k = 0; k <= miMinusOne; k++) {
+                successors[k] = stack[peekIndex][0]; // "Peek" into the stack and retrieve just the node from the pair [node, integer].
+            }
+            node = this._nodeFactory.createInternalNode(i-1, successors);
+            stack.push([node, i-1]);
+        }
     }
 }
 

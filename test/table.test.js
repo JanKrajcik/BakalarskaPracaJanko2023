@@ -185,5 +185,4 @@ describe('TruthTable - fromTable', () => {
         // Assert that the size of the internalTable is 0, as no internalNode should have been created.
         expect(tableOfTruth._internalTable.size).toBe(0);
     });
-
 });
