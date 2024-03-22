@@ -127,14 +127,15 @@ class TruthTable {
         while (j < this._truthVector.length) {
             let n = this._domains.length;
             let mn = this._domains[n-1];
-            let successors = new Array[mn];
+            let successors = new Array(mn);
             for (let k = 0; k < mn; k++) {
                 successors[k] = this._nodeFactory.createTerminalNode(this._truthVector[j]);
                 j++;
             }
-            let node = this._nodeFactory.createInternalNode(n);
-            stack.push([node, n]);
-            this.shrinkStack();
+            let node = this._nodeFactory.createInternalNode(n-1, successors);
+            //console.log("Node created in fromVector: " + node.toString());
+            stack.push([node, n-1]);
+            this.shrinkStack(stack);
         }
         let root = stack[stack.length - 1][0]; // "Peek" into the stack and retrieve just the node from the pair [node, integer].
         return new MDD(root);
@@ -146,13 +147,11 @@ class TruthTable {
      * @returns {void}
      */
     shrinkStack(stack = []) {
-        //TODO implement
         while (true) {
             let peekIndex = stack.length - 1;
             let node = stack[peekIndex][0]; // "Peek" into the stack and retrieve just the node from the pair [node, integer].
             let i = stack[peekIndex][1]; // "Peek" into the stack and retrieve just the integer from the pair [node, integer].
-            //TODO ask Michal if this description is correct VVVVVVVV
-            if (i === 1) return; // If we are at the root of the diagram, we have nothing to reduce???
+            if (i === 0) return; // If we are at the root of the diagram, we have nothing to reduce.
 
             let k = 0; // Used to peek k-th element from the top.
             let count = 0;
@@ -161,12 +160,14 @@ class TruthTable {
             do {
                 j = stack[peekIndex-k][1]; // Peek k-th (integer) element from the top of the stack.
                 if (j === i) count++;
+                k++;
             } while (k < stack.length && i === j);
-            let miMinusOne = this._domains[i] - 1; // Size of the domain of the (i-1)-th element.
-            if (count < miMinusOne) return; // If count is smaller than size of the domain of the (i-1) -th element, return.
-            let successors = new Array[miMinusOne];
-            for (let k = 0; k <= miMinusOne; k++) {
-                successors[k] = stack[peekIndex][0]; // "Peek" into the stack and retrieve just the node from the pair [node, integer].
+            let miMinusOne = this._domains[i-1]; // Size of the domain of the (i-1)-th element.
+            if (count < miMinusOne) return;// If count is smaller than size of the domain of the (i-1) -th element, return.
+            let successors = [];
+            for (let k = miMinusOne - 1; k >= 0; k--) {
+                let poppedElement = stack.pop(); // Pop pair [node, integer] from the stack and
+                successors[k] = poppedElement[0];       // retrieve just the node.
             }
             node = this._nodeFactory.createInternalNode(i-1, successors);
             stack.push([node, i-1]);
@@ -220,5 +221,10 @@ tableOfTruth.createInternalNode(2, [tableOfTruth._terminalTable.get(1)]);
 //console.log(tableOfTruth.makeCompositeKey(1, [tableOfTruth._terminalTable.get(1).toString(), tableOfTruth._terminalTable.get(2)]).toString());
 console.log(tableOfTruth.makeCompositeKey(1, [tableOfTruth._terminalTable.get(1), tableOfTruth._terminalTable.get(2)]));
 console.log(tableOfTruth._internalTable.size);*/
+
+tableOfTruth = new TruthTable([2,2,3], [0,1,2,0,1,2,0,1,2,1,1,2]);
+mddFromVector = tableOfTruth.fromVector();
+console.log("\nMDD from vector:");
+mddFromVector.printMDDStructure();
 
 module.exports = {TruthTable};

@@ -1,6 +1,6 @@
 /**
  * Changelog:
- *  Refacotring of all the classes and tests, especiall comments.
+ *  -fromVector and shrinkStack methods actually work.
  */
 
 /**
@@ -233,7 +233,7 @@ class MDD {
      * @param {number} levelOfNode - in the "tree" of nodes
      *                      (Number of edges that separate the node from the root).
      */
-    printMDDStructure(node, levelOfNode = 0) {
+    printMDDStructure(node = this._rootNode, levelOfNode = 0) {
         const indentation = '  '.repeat(levelOfNode); // Create indentation based on the levelOfNode
         //Printing InternalNodes differently than TerminalNodes.
         if (node instanceof InternalNode) {

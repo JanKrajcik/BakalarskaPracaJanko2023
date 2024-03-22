@@ -137,17 +137,17 @@ describe('TruthTable - fromTable', () => {
         tableOfTruth._nodeFactory.createTerminalNode(2);
 
         // Assert that only three TerminalNode were created.
-        expect(tableOfTruth._terminalTable.size).toBe(3);
+        expect(tableOfTruth._nodeFactory._terminalTable.size).toBe(3);
 
         // Assert that TerminalNodes have been created.
-        expect(tableOfTruth._terminalTable.get(0)).toBeInstanceOf(TerminalNode);
-        expect(tableOfTruth._terminalTable.get(1)).toBeInstanceOf(TerminalNode);
-        expect(tableOfTruth._terminalTable.get(2)).toBeInstanceOf(TerminalNode);
+        expect(tableOfTruth._nodeFactory._terminalTable.get(0)).toBeInstanceOf(TerminalNode);
+        expect(tableOfTruth._nodeFactory._terminalTable.get(1)).toBeInstanceOf(TerminalNode);
+        expect(tableOfTruth._nodeFactory._terminalTable.get(2)).toBeInstanceOf(TerminalNode);
 
         // Assert the values of created terminalNodes.
-        expect(tableOfTruth._terminalTable.get(0).value).toBe(0);
-        expect(tableOfTruth._terminalTable.get(1).value).toBe(1);
-        expect(tableOfTruth._terminalTable.get(2).value).toBe(2);
+        expect(tableOfTruth._nodeFactory._terminalTable.get(0).value).toBe(0);
+        expect(tableOfTruth._nodeFactory._terminalTable.get(1).value).toBe(1);
+        expect(tableOfTruth._nodeFactory._terminalTable.get(2).value).toBe(2);
     });
 
     it('should create only one InternalNode for each specific node instance, as no duplicates are allowed.', () => {
@@ -159,13 +159,13 @@ describe('TruthTable - fromTable', () => {
         tableOfTruth._nodeFactory.createTerminalNode(1);
         tableOfTruth._nodeFactory.createTerminalNode(2);
 
-        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._terminalTable.get(0), tableOfTruth._terminalTable.get(1)]);
-        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._terminalTable.get(1), tableOfTruth._terminalTable.get(2)]);
+        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._nodeFactory._terminalTable.get(0), tableOfTruth._nodeFactory._terminalTable.get(1)]);
+        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._nodeFactory._terminalTable.get(1), tableOfTruth._nodeFactory._terminalTable.get(2)]);
 
-        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._terminalTable.get(1), tableOfTruth._terminalTable.get(2)]);
-        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._terminalTable.get(0), tableOfTruth._terminalTable.get(1)]);
+        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._nodeFactory._terminalTable.get(1), tableOfTruth._nodeFactory._terminalTable.get(2)]);
+        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._nodeFactory._terminalTable.get(0), tableOfTruth._nodeFactory._terminalTable.get(1)]);
         // Assert that the size of the internalTable is 2, meaning five internalNodes were created.
-        expect(tableOfTruth._internalTable.size).toBe(2);
+        expect(tableOfTruth._nodeFactory._internalTable.size).toBe(2);
     });
 
     it('should not create any InternalNode, as they will be redundant (all their edges are leading to the same node).', () => {
@@ -177,12 +177,12 @@ describe('TruthTable - fromTable', () => {
         tableOfTruth._nodeFactory.createTerminalNode(1);
         tableOfTruth._nodeFactory.createTerminalNode(2);
 
-        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._terminalTable.get(2)]);
-        tableOfTruth._nodeFactory.createInternalNode(2, [tableOfTruth._terminalTable.get(1)]);
-        tableOfTruth._nodeFactory.createInternalNode(2, [tableOfTruth._terminalTable.get(2)]);
-        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._terminalTable.get(2)]);
-        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._terminalTable.get(1)]);
+        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._nodeFactory._terminalTable.get(2)]);
+        tableOfTruth._nodeFactory.createInternalNode(2, [tableOfTruth._nodeFactory._terminalTable.get(1)]);
+        tableOfTruth._nodeFactory.createInternalNode(2, [tableOfTruth._nodeFactory._terminalTable.get(2)]);
+        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._nodeFactory._terminalTable.get(2)]);
+        tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._nodeFactory._terminalTable.get(1)]);
         // Assert that the size of the internalTable is 0, as no internalNode should have been created.
-        expect(tableOfTruth._internalTable.size).toBe(0);
+        expect(tableOfTruth._nodeFactory._internalTable.size).toBe(0);
     });
 });
