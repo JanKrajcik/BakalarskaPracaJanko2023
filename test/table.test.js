@@ -4,7 +4,7 @@ const {TerminalNode, InternalNode} = require('../app/diagram'); // Imports the T
 describe('TruthTable - Table generating and printing', () => {
     it('should generate and print correct binary truth table for 2 variables.', () => {
         const tableOfTruth = new TruthTable([2, 2], [0, 0, 0, 1]);
-        tableOfTruth.generateTable();
+
         const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
         tableOfTruth.printTable();
@@ -21,7 +21,7 @@ describe('TruthTable - Table generating and printing', () => {
 
     it('should generate and print correct binary truth table for 3 variables.', () => {
         const tableOfTruth = new TruthTable([2, 2, 2], [0, 0, 0, 1, 1, 0, 0, 1]);
-        tableOfTruth.generateTable();
+        tableOfTruth.getTruthTable();
         const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
         tableOfTruth.printTable();
@@ -42,7 +42,7 @@ describe('TruthTable - Table generating and printing', () => {
 
     it('should generate and print correct binary truth table for 4 variables.', () => {
         const tableOfTruth = new TruthTable([2, 2, 2, 2], [0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0]);
-        tableOfTruth.generateTable();
+        tableOfTruth.getTruthTable();
         const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
         tableOfTruth.printTable();
@@ -73,7 +73,7 @@ describe('TruthTable - Table generating and printing', () => {
     it('should generate and print correct truth table for 3 variables, where one is ternary.', () => {
         // Test data from table 1.2 from thesis.
         const tableOfTruth = new TruthTable([2, 2, 3], [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2]);
-        tableOfTruth.generateTable();
+        tableOfTruth.getTruthTable();
         const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
         tableOfTruth.printTable();
@@ -102,7 +102,7 @@ describe('TruthTable - Table evaluation', () => {
     // Test data from table 1.2 from thesis.
     it('should evaluate each row of the table correctly.', () => {
         const tableOfTruth = new TruthTable([2, 2, 3], [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2]);
-        tableOfTruth.generateTable();
+        tableOfTruth.getTruthTable();
 
         expect(tableOfTruth.evaluate([0, 0, 0])).toBe(0);
         expect(tableOfTruth.evaluate([0, 0, 1])).toBe(0);
@@ -168,7 +168,7 @@ describe('TruthTable - fromTable', () => {
         expect(tableOfTruth._nodeFactory._internalTable.size).toBe(2);
     });
 
-    it('should not create any InternalNode, as they will be redundant (all their edges are leading to the same node).', () => {
+    it('should not create any InternalNode, as they would be redundant (all their edges are leading to the same node).', () => {
         // Initialize a test TruthTable instance
         const tableOfTruth = new TruthTable();
 
@@ -184,5 +184,48 @@ describe('TruthTable - fromTable', () => {
         tableOfTruth._nodeFactory.createInternalNode(1, [tableOfTruth._nodeFactory._terminalTable.get(1)]);
         // Assert that the size of the internalTable is 0, as no internalNode should have been created.
         expect(tableOfTruth._nodeFactory._internalTable.size).toBe(0);
+    });
+});
+
+describe('TruthTable - fromVector method', () => {
+    it('should generate a correct MDD structure and print it', () => {
+        const tableOfTruth = new TruthTable([2, 2, 3], [0, 1, 2, 0, 1, 2, 0, 1, 2, 1, 1, 2]);
+        const mddFromVector = tableOfTruth.fromVector();
+
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+
+        mddFromVector.printMDDStructure();
+
+        expect(consoleLogSpy).toHaveBeenCalledTimes(14);
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(1, 'N0');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(2, '  N2');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(3, '    TN0');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(4, '    TN1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(5, '    TN2');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(6, '  N1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(7, '    N2');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(8, '      TN0');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(9, '      TN1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(10, '      TN2');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(11, '    N2');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(12, '      TN1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(13, '      TN1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(14, '      TN2');
+
+        consoleLogSpy.mockRestore();
+    });
+
+    it('should generate only one TerminalNode, as the function is constant, even though it has multiple domains.', () => {
+        const tableOfTruth = new TruthTable([1, 1, 1, 1, 1, 1, 1], [0,0,0,0,0,0,0]);
+        const mddFromVector = tableOfTruth.fromVector();
+
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+
+        mddFromVector.printMDDStructure();
+
+        expect(consoleLogSpy).toHaveBeenCalledTimes(1);
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(1, 'TN0');
+
+        consoleLogSpy.mockRestore();
     });
 });

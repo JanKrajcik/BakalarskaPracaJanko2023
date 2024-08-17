@@ -12,14 +12,13 @@ class TruthTable {
      * @param {number[]} truthVector - The truth vector for evaluation.
      */
     constructor(domains = [], truthVector = []) {
-        // Domains and offsets together are staging table needed for generating table and evaluating it.
+        // Domains and offsets together are staging variables needed for generating table and evaluating it.
         this._domains = domains;
         this._offsets = [];
 
         this._variablesCount = this._domains.length;
         this.createStagingTable();
 
-        this._truthTable = null;
         this._truthVector = truthVector;
 
         // Node factory for creating nodes in the MDD
@@ -56,19 +55,23 @@ class TruthTable {
     }
 
     /**
-     * Generates the truth table for the specified variables and their domains.
-     * @returns {void}
+     * Generates and returns the truth table based on the domains.
+     * @returns {Array[]} The generated truth table.
      */
-    generateTable() {
+    getTruthTable() {
+        let truthTable;
         //This is the smartest declaration of 2D array I have found.
         let tableLength = this._domains.reduce((accumulator, currentValue) => accumulator * currentValue, 1); // Multiplies all the elements of an array.
-        this._truthTable = Array.from({length: tableLength}, () => Array.from({length: this._domains.length}).fill(0));
+        truthTable = Array.from({length: tableLength}, () => Array.from({length: this._domains.length}).fill(0));
         //Fill table with values of variables.
         for (let i = 0; i < this._variablesCount; i++) {
             for (let j = 1; j < tableLength; j++) {
-                this._truthTable[j][i] = (Math.floor(j / this._offsets[i])) % this._domains[i];
+                truthTable[j][i] = (Math.floor(j / this._offsets[i])) % this._domains[i];
             }
+            //TODO
+            // Lambda which will test, whether MDD and Table gives same result for same values will be executed here. Extract this method to a Utils class.
         }
+        return truthTable;
     }
 
     /**
@@ -94,26 +97,27 @@ class TruthTable {
      * @returns {void}
      */
     printTable() {
+        let truthTable = this.getTruthTable();
         // Print the row labels.
         let topRow = '';
-        for (let i = 0; i < this._truthTable[0].length; i++) {
+        for (let i = 0; i < truthTable[0].length; i++) {
             topRow += `x${i} `;
         }
         topRow += '  f';
         console.log(topRow);
 
         // Print the truthTable values, straight line of '|' and truthVector values.
-        for (let i = 0; i < this._truthTable.length; i++) {
+        for (let i = 0; i < truthTable.length; i++) {
             let row = '';
-            for (let j = 0; j < this._truthTable[i].length; j++) {
-                row += `${this._truthTable[i][j]}  `;
+            for (let j = 0; j < truthTable[i].length; j++) {
+                row += `${truthTable[i][j]}  `;
             }
             row += `| ${this._truthVector[i]}`;
             console.log(row);
         }
     }
 
-    // this method should have parameter truthVector, but we already
+    // This method should have parameter truthVector, but we already
     // have access to it here, so we don't have to pass it.
     /**
      * Converts the truth vector and domains into an MDD (Multi-Decision Diagram) representation.
@@ -178,7 +182,7 @@ class TruthTable {
 // Usage
 //const tableOfTruth = new TruthTable([2,2,3], [0,0,0,0,1,1,0,1,1,0,2,2]);
 //const tableOfTruth = new TruthTable([2,5,3], [1,0,0,1,0,1,1,1,1,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0,0,1,0,1,1,1]);
-//tableOfTruth.generateTable();
+//tableOfTruth.getTruthTable();
 //tableOfTruth.printTable();
 // console.log(tableOfTruth.evaluate([0, 0, 1]));
 // console.log(tableOfTruth.evaluate([0, 0, 1]));
@@ -193,38 +197,5 @@ class TruthTable {
 // console.log(tableOfTruth.evaluate([1, 1, 1]));
 // console.log(tableOfTruth.evaluate([1, 1, 2]));
 
-//console.log(truthTable);
-
-/*const tableOfTruth = new TruthTable();
-tableOfTruth.createTerminalNode(1);
-tableOfTruth.createTerminalNode(1);
-tableOfTruth.createTerminalNode(0);
-tableOfTruth.createTerminalNode(1);
-tableOfTruth.createTerminalNode(0);
-console.log(tableOfTruth._terminalTable.size);*/
-
-/*const tableOfTruth = new TruthTable();
-
-// Create diagram structure in a bottom-up manner.
-tableOfTruth.createTerminalNode(0);
-tableOfTruth.createTerminalNode(1);
-tableOfTruth.createTerminalNode(2);
-
-tableOfTruth.createInternalNode(1, [tableOfTruth._terminalTable.get(0), tableOfTruth._terminalTable.get(1)]);
-tableOfTruth.createInternalNode(1, [tableOfTruth._terminalTable.get(1), tableOfTruth._terminalTable.get(2)]);
-//These two are not being created, as they are redundant. all their edges are leading to the same node.
-tableOfTruth.createInternalNode(1, [tableOfTruth._terminalTable.get(2)]);
-tableOfTruth.createInternalNode(2, [tableOfTruth._terminalTable.get(1)]);
-
-
-
-//console.log(tableOfTruth.makeCompositeKey(1, [tableOfTruth._terminalTable.get(1).toString(), tableOfTruth._terminalTable.get(2)]).toString());
-console.log(tableOfTruth.makeCompositeKey(1, [tableOfTruth._terminalTable.get(1), tableOfTruth._terminalTable.get(2)]));
-console.log(tableOfTruth._internalTable.size);*/
-
-tableOfTruth = new TruthTable([2,2,3], [0,1,2,0,1,2,0,1,2,1,1,2]);
-mddFromVector = tableOfTruth.fromVector();
-console.log("\nMDD from vector:");
-mddFromVector.printMDDStructure();
 
 module.exports = {TruthTable};
