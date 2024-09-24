@@ -70,6 +70,7 @@ class TruthTable {
             }
             //TODO
             // Lambda which will test, whether MDD and Table gives same result for same values will be executed here. Extract this method to a Utils class.
+
         }
         return truthTable;
     }
@@ -178,24 +179,5 @@ class TruthTable {
         }
     }
 }
-
-// Usage
-//const tableOfTruth = new TruthTable([2,2,3], [0,0,0,0,1,1,0,1,1,0,2,2]);
-//const tableOfTruth = new TruthTable([2,5,3], [1,0,0,1,0,1,1,1,1,0,1,0,0,0,1,0,1,0,0,1,0,1,0,0,0,1,0,1,1,1]);
-//tableOfTruth.getTruthTable();
-//tableOfTruth.printTable();
-// console.log(tableOfTruth.evaluate([0, 0, 1]));
-// console.log(tableOfTruth.evaluate([0, 0, 1]));
-// console.log(tableOfTruth.evaluate([0, 0, 2]));
-// console.log(tableOfTruth.evaluate([0, 1, 0]));
-//console.log(tableOfTruth.evaluate([0, 1, 1])); //0
-// console.log(tableOfTruth.evaluate([0, 1, 2]));
-// console.log(tableOfTruth.evaluate([1, 0, 0]));
-// console.log(tableOfTruth.evaluate([1, 0, 1]));
-// console.log(tableOfTruth.evaluate([1, 0, 2]));
-// console.log(tableOfTruth.evaluate([1, 1, 0]));
-// console.log(tableOfTruth.evaluate([1, 1, 1]));
-// console.log(tableOfTruth.evaluate([1, 1, 2]));
-
 
 module.exports = {TruthTable};

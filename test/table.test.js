@@ -4,7 +4,6 @@ const {TerminalNode, InternalNode} = require('../app/diagram'); // Imports the T
 describe('TruthTable - Table generating and printing', () => {
     it('should generate and print correct binary truth table for 2 variables.', () => {
         const tableOfTruth = new TruthTable([2, 2], [0, 0, 0, 1]);
-
         const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
         tableOfTruth.printTable();
@@ -21,7 +20,6 @@ describe('TruthTable - Table generating and printing', () => {
 
     it('should generate and print correct binary truth table for 3 variables.', () => {
         const tableOfTruth = new TruthTable([2, 2, 2], [0, 0, 0, 1, 1, 0, 0, 1]);
-        tableOfTruth.getTruthTable();
         const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
         tableOfTruth.printTable();
@@ -42,7 +40,6 @@ describe('TruthTable - Table generating and printing', () => {
 
     it('should generate and print correct binary truth table for 4 variables.', () => {
         const tableOfTruth = new TruthTable([2, 2, 2, 2], [0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 1, 1, 0]);
-        tableOfTruth.getTruthTable();
         const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
         tableOfTruth.printTable();
@@ -73,7 +70,6 @@ describe('TruthTable - Table generating and printing', () => {
     it('should generate and print correct truth table for 3 variables, where one is ternary.', () => {
         // Test data from table 1.2 from thesis.
         const tableOfTruth = new TruthTable([2, 2, 3], [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2]);
-        tableOfTruth.getTruthTable();
         const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
 
         tableOfTruth.printTable();
@@ -102,7 +98,6 @@ describe('TruthTable - Table evaluation', () => {
     // Test data from table 1.2 from thesis.
     it('should evaluate each row of the table correctly.', () => {
         const tableOfTruth = new TruthTable([2, 2, 3], [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2]);
-        tableOfTruth.getTruthTable();
 
         expect(tableOfTruth.evaluate([0, 0, 0])).toBe(0);
         expect(tableOfTruth.evaluate([0, 0, 1])).toBe(0);
@@ -168,7 +163,7 @@ describe('TruthTable - fromTable', () => {
         expect(tableOfTruth._nodeFactory._internalTable.size).toBe(2);
     });
 
-    it('should not create any InternalNode, as they would be redundant (all their edges are leading to the same node).', () => {
+    it('should not create any InternalNode, as they will be redundant (all their edges are leading to the same node).', () => {
         // Initialize a test TruthTable instance
         const tableOfTruth = new TruthTable();
 
@@ -188,7 +183,7 @@ describe('TruthTable - fromTable', () => {
 });
 
 describe('TruthTable - fromVector method', () => {
-    it('should generate a correct MDD structure and print it', () => {
+    it('should generate the correct MDD structure and print it', () => {
         const tableOfTruth = new TruthTable([2, 2, 3], [0, 1, 2, 0, 1, 2, 0, 1, 2, 1, 1, 2]);
         const mddFromVector = tableOfTruth.fromVector();
 
@@ -215,7 +210,7 @@ describe('TruthTable - fromVector method', () => {
         consoleLogSpy.mockRestore();
     });
 
-    it('should generate only one TerminalNode, as the function is constant, even though it has multiple domains.', () => {
+    it('should generate only one TerminalNode, as function is constant, even though it has multiple domains.', () => {
         const tableOfTruth = new TruthTable([1, 1, 1, 1, 1, 1, 1], [0,0,0,0,0,0,0]);
         const mddFromVector = tableOfTruth.fromVector();
 
@@ -227,5 +222,45 @@ describe('TruthTable - fromVector method', () => {
         expect(consoleLogSpy).toHaveBeenNthCalledWith(1, 'TN0');
 
         consoleLogSpy.mockRestore();
+    });
+});
+
+//TODO this test should probably be moved somewhere else.
+describe('TruthTable and MDD evaluation comparison', () => {
+    it('should evaluate the same result for both TruthTable and MDD for all dynamically generated rows', () => {
+        const variableCount = Math.floor(Math.random() * 5) + 1;
+
+        // Generate the array of domains with domains from 1 to 5.
+        const domains = Array.from({ length: variableCount }, () => Math.floor(Math.random() * 5) + 1);
+
+        // Calculate the truth table length, so it can be used for generating the truth vector.
+        let tableLength = 1;
+        for (let i = 0; i < domains.length; i++) {
+            tableLength *= domains[i];
+        }
+
+        // Generate the truth vector based on the table length.
+        const truthVector = [];
+        for (let i = 0; i < tableLength; i++) {
+            truthVector.push(Math.floor(Math.random() * domains[domains.length - 1]));
+        }
+
+        // Log generated values for debugging
+        console.log("Generated Variable Count:", variableCount);
+        console.log("Generated Domains:", domains);
+        console.log("Generated Truth Vector:", truthVector);
+
+        const tableOfTruth = new TruthTable(domains, truthVector);
+        const mdd = tableOfTruth.fromVector();
+
+        let truthTable = tableOfTruth.getTruthTable();
+        let i = 0;
+
+        do {
+            let domain = truthTable[i];
+            // Compare TruthTable and MDD evaluations
+            expect(tableOfTruth.evaluate(domain)).toEqual(mdd.evaluate(domain).resultValue);
+            i++;
+        } while (i < truthTable.length);
     });
 });
