@@ -164,6 +164,10 @@ class MDD {
         this._rootNode = rootNode;
     }
 
+    getRoot() {
+        return this._rootNode;
+    }
+
     /**
      * Method evaluate evaluates the result of the given variablesValues in the MDD.
      *
