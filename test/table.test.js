@@ -1,5 +1,6 @@
 const {TruthTable} = require('../app/table'); // Imports the TruthTable class from table.js.
 const {TerminalNode, InternalNode} = require('../app/diagram'); // Imports the TruthTable class from table.js.
+const seedrandom = require('seedrandom');  // Imports the seedrandom library.
 
 describe('TruthTable - Table generating and printing', () => {
     it('should generate and print correct binary truth table for 2 variables.', () => {
@@ -210,6 +211,35 @@ describe('TruthTable - fromVector method', () => {
         consoleLogSpy.mockRestore();
     });
 
+    it('should generate the correct MDD structure from thesis and print it', () => {
+        const tableOfTruth = new TruthTable([2, 2, 3], [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2]);
+        const mddFromVector = tableOfTruth.fromVector();
+
+        const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation();
+
+        mddFromVector.printMDDStructure();
+
+        expect(consoleLogSpy).toHaveBeenCalledTimes(16);
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(1, 'N0');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(2, '  N1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(3, '    TN0');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(4, '    N2');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(5, '      TN0');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(6, '      TN1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(7, '      TN1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(8, '  N1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(9, '    N2');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(10, '      TN0');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(11, '      TN1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(12, '      TN1');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(13, '    N2');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(14, '      TN0');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(15, '      TN2');
+        expect(consoleLogSpy).toHaveBeenNthCalledWith(16, '      TN2');
+
+        consoleLogSpy.mockRestore();
+    });
+
     it('should generate only one TerminalNode, as function is constant, even though it has multiple domains.', () => {
         const tableOfTruth = new TruthTable([1, 1, 1, 1, 1, 1, 1], [0,0,0,0,0,0,0]);
         const mddFromVector = tableOfTruth.fromVector();
@@ -228,24 +258,23 @@ describe('TruthTable - fromVector method', () => {
 //TODO this test should probably be moved somewhere else.
 describe('TruthTable and MDD evaluation comparison', () => {
     it('should evaluate the same result for both TruthTable and MDD for all dynamically generated rows', () => {
-        const variableCount = Math.floor(Math.random() * 5) + 1;
+        // Generate a random seed using current time or another method
+        const seed = Math.floor(Math.random() * 1000000).toString(); // Random seed as a string
+        const rng = seedrandom(seed); // Create a random number generator with the seed
 
-        // Generate the array of domains with domains from 1 to 5.
-        const domains = Array.from({ length: variableCount }, () => Math.floor(Math.random() * 5) + 1);
+        const variableCount = Math.floor(rng() * 5) + 1; // Variable count up to 5
+
+        // Generate the array of domains with values from 1 to 5.
+        const domains = Array.from({ length: variableCount }, () => Math.floor(rng() * 5) + 1);
 
         // Calculate the truth table length, so it can be used for generating the truth vector.
-        let tableLength = 1;
-        for (let i = 0; i < domains.length; i++) {
-            tableLength *= domains[i];
-        }
+        let tableLength = domains.reduce((acc, cur) => acc * cur, 1);
 
         // Generate the truth vector based on the table length.
-        const truthVector = [];
-        for (let i = 0; i < tableLength; i++) {
-            truthVector.push(Math.floor(Math.random() * domains[domains.length - 1]));
-        }
+        const truthVector = Array.from({ length: tableLength }, () => Math.floor(rng() * domains[domains.length - 1]));
 
-        // Log generated values for debugging
+        // Log the generated seed and other details for debugging
+        console.log("Generated Seed:", seed);
         console.log("Generated Variable Count:", variableCount);
         console.log("Generated Domains:", domains);
         console.log("Generated Truth Vector:", truthVector);
@@ -259,7 +288,7 @@ describe('TruthTable and MDD evaluation comparison', () => {
         do {
             let domain = truthTable[i];
             // Compare TruthTable and MDD evaluations
-            expect(tableOfTruth.evaluate(domain)).toEqual(mdd.evaluate(domain).resultValue);
+            expect(tableOfTruth.evaluate(domain)).toEqual(mdd.evaluate(domain).getResultValue());
             i++;
         } while (i < truthTable.length);
     });

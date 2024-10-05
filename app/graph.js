@@ -63,7 +63,7 @@ class Graph {
         if (!this.vertices.has(node)) {
             const vertexId = this.vertexId++;
             if (node instanceof TerminalNode) {
-                this.vertices.set(node, { id: vertexId, value: node.resultValue });
+                this.vertices.set(node, { id: vertexId, value: node.getResultValue()});
             } else {
                 this.vertices.set(node, { id: vertexId, index: node.index });
             }
@@ -97,7 +97,7 @@ class Graph {
             return vertexId; // No successors to process for terminal nodes
         }
 
-        let successors = node.successors; // Get the successors of the internal node
+        let successors = node.getSuccessors(); // Get the successors of the internal node
         for (let decision = 0; decision < successors.length; decision++) {
             const successorVertexId = this.traverseMDD(successors[decision]); // Recur for each successor
             this.addEdge(vertexId, successorVertexId, decision); // Add edge with decision index

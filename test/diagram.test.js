@@ -12,7 +12,7 @@ const {InternalNode, TerminalNode, MDD} = require('../app/diagram'); // Imports 
 describe('InternalNode', () => {
     it('should have the correct index', () => {
         const internalNode = new InternalNode(42);
-        expect(internalNode.index).toBe(42);
+        expect(internalNode.getIndex()).toBe(42);
     });
 
     it('should return 0 for a new InternalNode without successors', () => {
@@ -182,7 +182,7 @@ describe('MDD', () => {
         const result = mdd.evaluate([1, 0, 2]);
 
         expect(result instanceof TerminalNode).toBe(true);
-        expect(result.resultValue).toBe(1);
+        expect(result.getResultValue()).toBe(1);
     });
 
     it('should evaluate decisions correctly, print path and return a TerminalNode for evaluateAndPrintPath', () => {
@@ -219,7 +219,7 @@ describe('MDD', () => {
         const result = mdd.evaluateAndPrintPath([1, 0, 2]);
 
         expect(result instanceof TerminalNode).toBe(true);
-        expect(result.resultValue).toBe(1);
+        expect(result.getResultValue()).toBe(1);
 
         expect(consoleSpy).toHaveBeenCalledWith('---Path through the diagram---');
         expect(consoleSpy).toHaveBeenCalledWith('N0 -> N1 -> N2 -> TN1');
