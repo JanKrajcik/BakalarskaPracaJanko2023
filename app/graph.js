@@ -1,5 +1,5 @@
-const { TruthTable } = require("./table");
-const { TerminalNode, InternalNode, MDD } = require("./diagram");
+import { TruthTable } from "./table.js";
+import { TerminalNode, InternalNode, MDD } from "./diagram.js";
 
 class Graph {
     constructor() {
@@ -110,7 +110,7 @@ class Graph {
      * Generates the DOT representation of the graph, which can be used for visualization.
      * @returns {string} - The DOT string representing the graph.
      */
-    toDOTString() {
+   toDOTString() {
         let dotString = 'digraph DD {\n'; // Start of the DOT string
 
         // Set graph styling
@@ -165,3 +165,4 @@ class Graph {
         return dotString; // Return the generated DOT string
     }
 }
+window.Graph = Graph;

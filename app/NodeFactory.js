@@ -1,4 +1,4 @@
-const { TerminalNode, InternalNode } = require("./diagram");
+import { TerminalNode, InternalNode } from "./diagram.js";
 /**
  * NodeFactory class responsible for creating nodes in the Multi-Decision Diagram (MDD).
  */
@@ -101,4 +101,4 @@ class NodeFactory {
     }
 }
 
-module.exports = { NodeFactory };
+export { NodeFactory };

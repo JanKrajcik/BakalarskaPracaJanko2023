@@ -1,6 +1,8 @@
-//const {Diagram} = require('./Diagram');
-const {/*TerminalNode, InternalNode,*/ MDD} = require("./diagram");
-const {NodeFactory} = require('./NodeFactory');
+//const {Diagram} = require('./Diagram.js');
+import {/*TerminalNode, InternalNode,*/ MDD} from "./diagram.js";
+import {NodeFactory} from './nodeFactory.js';
+//import seedrandom from 'seedrandom.js';  // Import the seedrandom library
+
 
 /**
  * Represents a Truth Table used for evaluating logical expressions.
@@ -81,7 +83,6 @@ class TruthTable {
      * @returns {number|null} - The evaluated result value if the evaluation can be performed, or null if the evaluation cannot be done.
      */
     evaluate(variablesValues = []) {
-        //this.createStagingTable();
         if (variablesValues.length !== this._variablesCount) {
             console.error(`Evaluation cannot be performed. The number of provided variable values (${variablesValues.length}) does not match the expected number of variables (${this._variablesCount}).`);
         }
@@ -118,7 +119,7 @@ class TruthTable {
         }
     }
 
-    // This method should have parameter truthVector, but we already
+    // This method should have a parameter truthVector, but we already
     // have access to it here, so we don't have to pass it.
     /**
      * Converts the truth vector and domains into an MDD (Multi-Decision Diagram) representation.
@@ -180,4 +181,5 @@ class TruthTable {
     }
 }
 
-module.exports = {TruthTable};
+window.TruthTable = TruthTable;
+export { TruthTable };

@@ -10,10 +10,65 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
+    <script type="module" src="../graph.js"></script>
+    <script type="module" src="../table.js"></script>
+    <script type="module" src="../diagram.js"></script>
+
 </head>
 <body>
-<div class="left-side">
-    <img src="https://via.placeholder.com/150" alt="Placeholder Image">
+<div class="left-side" id="svg-container">
+    <!-- The SVG content will be injected here via JavaScript -->
+    <pre id="editor"></pre>
+    <div id="options" style="display: none">
+        <label id="raw" class="disabled">
+            <input type="checkbox" disabled=""> Show raw output
+        </label>
+
+        <label>
+            <a href="#" target="_blank" id="download">Download</a>
+        </label>
+
+        <label>
+            <input type="button" value="Share" id="share">
+        </label>
+
+        <input type="input" value="" id="shareurl">
+
+    </div>
+    <div id="review">
+        <div id="error"></div>
+    </div>
+    <div id="status"></div>
+
+    <script src="../../ace/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"
+            integrity="sha512-qtX0GLM3qX8rxJN1gyDfcnMFFrKvixfoEOwbBib9VafR5vbChV5LeE5wSI/x+IlCkTY5ZFddFDCCfaVJJNnuKQ=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+    ></script>
+    <script src="script.js" type="text/javascript" charset="utf-8"></script>
+    <script src="viz.js" type="text/javascript" charset="utf-8"></script>
+    <script src="svg-pan-zoom.min.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const truthTable = new TruthTable([2, 2, 3], [0, 1, 2, 0, 1, 2, 0, 1, 2, 1, 1, 2]);
+                const mdd = truthTable.fromVector();
+
+                const graph = new Graph();
+                graph.traverseMDD(mdd.getRoot());
+                const dOTString = graph.toDOTString();
+
+
+                if (typeof ace !== "undefined") {
+                    const editor = ace.edit("editor");
+                    editor.setTheme("ace/theme/twilight");
+                    editor.session.setMode("ace/mode/dot");
+                    editor.getSession().setValue(dOTString);
+                }
+            });
+
+    </script>
 </div>
 <div class="control-panel">
 
@@ -21,11 +76,11 @@
     <div class="section">
         <h3>Input</h3>
         <div class="form-control">
-            <label for="domain" <!--style="margin-right: 40px !important;"-->Domain:</label>
+            <label for="domain"> Domain:</label>
             <input type="text" id="domain" placeholder="Comma separated numbers, e.g., 2, 2, 3">
         </div>
         <div class="form-control">
-            <label for="truthVector">Truth Vector:</label>
+            <label for="truthVector"> Truth Vector:</label>
             <input type="text" id="truthVector" placeholder="Comma separated numbers, e.g., 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2">
         </div>
     </div>
@@ -54,9 +109,20 @@
                 <option value="png">PNG</option>
                 <option value="svg">SVG</option>
             </select>
+            <label id="format">
+                <select>
+                    <option selected="">svg</option>
+                    <option>png-image-element</option>
+                    <option>json</option>
+                    <option>xdot</option>
+                    <option>plain</option>
+                    <option>ps</option>
+                </select>
+            </label>
         </div>
         <button id="exportButton" class="export-button">Export</button>
     </div>
 </div>
+
 </body>
 </html>

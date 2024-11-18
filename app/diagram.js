@@ -20,7 +20,7 @@ class InternalNode {
     }
 
     // Getter for the InternalNode index
-    get index() {
+    getIndex() {
         return this._index;
     }
 
@@ -33,7 +33,7 @@ class InternalNode {
     }
 
     // Getter for the array of successors
-    get successors() {
+    getSuccessors() {
         return this._successors;
     }
 
@@ -75,13 +75,13 @@ class InternalNode {
     equals(other) {
         if (!(other instanceof InternalNode) &&  // Check if other is an instance of InternalNode
             this.index !== other.index &&  // Check if the indices of this InternalNode and the other InternalNode are equal
-            this.successors.length !== other.successors.length) { // Check if other and this have same amount of successors.
+            this.getSuccessors().length !== other.getSuccessors().length) { // Check if other and this have same amount of successors.
             return false;
         }
         // Check if the successors of this InternalNode and the other InternalNode are equal
         // Successors are considered equal if they are the same instances in the same order
-        for (let i = 0; i < this.successors.length; i++) {
-            if (!this.successors[i].equals(other.successors[i])) {
+        for (let i = 0; i < this.getSuccessors().length; i++) {
+            if (!this.getSuccessors()[i].equals(other.getSuccessors()[i])) {
                 return false;
             }
         }
@@ -96,9 +96,9 @@ class InternalNode {
     toString() {
         const successorIndices = this._successors.map(successor => {
             if (successor instanceof InternalNode) {
-                return `N${successor.index}`;
+                return `N${successor.getIndex()}`;
             } else if (successor instanceof TerminalNode) {
-                return `TN${successor.resultValue}`;
+                return `TN${successor.getResultValue()}`;
             } else {
                 return 'UNKNOWN';
             }
@@ -120,7 +120,7 @@ class TerminalNode {
     }
 
     // Getter for the value property
-    get resultValue() {
+    getResultValue() {
         return this.value;
     }
 
@@ -164,6 +164,10 @@ class MDD {
         this._rootNode = rootNode;
     }
 
+    getRoot() {
+        return this._rootNode;
+    }
+
     /**
      * Method evaluate evaluates the result of the given variablesValues in the MDD.
      *
@@ -180,14 +184,14 @@ class MDD {
         let CurrentNode = this._rootNode;
 
         while (!(CurrentNode instanceof TerminalNode)) {
-            if ((variablesValues.length - 1) < CurrentNode.index || variablesValues[CurrentNode.index] > (CurrentNode.getSuccessorsCount() - 1)) {
-                console.error(`Invalid decision at node index ${CurrentNode.index}: Either the decision exceeds the number of node's successors or it is beyond the provided decisions' scope.`);
+            if ((variablesValues.length - 1) < CurrentNode.getIndex() || variablesValues[CurrentNode.getIndex()] > (CurrentNode.getSuccessorsCount() - 1)) {
+                console.error(`Invalid decision at node index ${CurrentNode.getIndex()}: Either the decision exceeds the number of node's successors or it is beyond the provided decisions' scope.`);
                 return null;
             }
             // Selects new CurrentNode from successors of CurrentNode.
             // The decision that is made on CurrentNode is based on index of the CurrentNode.
             //     n-th variableValue (decision) is performed on n-th node.
-            CurrentNode = CurrentNode.successors[variablesValues[CurrentNode.index]];
+            CurrentNode = CurrentNode.getSuccessors()[variablesValues[CurrentNode.getIndex()]];
 
         }
         return CurrentNode;
@@ -204,21 +208,21 @@ class MDD {
 
         while (!(CurrentNode instanceof TerminalNode)) {
             // Check for out-of-bounds or invalid decisions
-            if ((variablesValues.length - 1) < CurrentNode.index || variablesValues[CurrentNode.index] < 0 || variablesValues[CurrentNode.index] >= CurrentNode.getSuccessorsCount()) {
-                console.error(`Invalid decision at node index ${CurrentNode.index}: Either the decision exceeds the number of node's successors or it is beyond the provided decisions' scope.`);
+            if ((variablesValues.length - 1) < CurrentNode.getIndex() || variablesValues[CurrentNode.getIndex()] < 0 || variablesValues[CurrentNode.getIndex()] >= CurrentNode.getSuccessorsCount()) {
+                console.error(`Invalid decision at node index ${CurrentNode.getIndex()}: Either the decision exceeds the number of node's successors or it is beyond the provided decisions' scope.`);
                 return null;
             }
 
             // Add the current node to the path before making the next move
-            path.push(CurrentNode instanceof TerminalNode ? `TN${CurrentNode.resultValue}` : `N${CurrentNode.index}`);
+            path.push(CurrentNode instanceof TerminalNode ? `TN${CurrentNode.getResultValue()}` : `N${CurrentNode.getIndex()}`);
 
             // Move to the next node based on the decision
-            CurrentNode = CurrentNode.successors[variablesValues[CurrentNode.index]];
+            CurrentNode = CurrentNode.getSuccessors()[variablesValues[CurrentNode.getIndex()]];
         }
 
         // Once the loop is done, it means we've reached a TerminalNode
         // Add the terminal node to the path as well
-        path.push(`TN${CurrentNode.resultValue}`);
+        path.push(`TN${CurrentNode.getResultValue()}`);
 
         // Print the path
         console.log('---Path through the diagram---');
@@ -237,17 +241,17 @@ class MDD {
         const indentation = '  '.repeat(levelOfNode); // Create indentation based on the levelOfNode
         //Printing InternalNodes differently than TerminalNodes.
         if (node instanceof InternalNode) {
-            console.log(`${indentation}N${node.index}`);
+            console.log(`${indentation}N${node.getIndex()}`);
             // Print the structure recursively for each successor
-            for (const successor of node.successors) {
+            for (const successor of node.getSuccessors()) {
                 this.printMDDStructure(successor, levelOfNode + 1);
             }
         } else if (node instanceof TerminalNode) {
-            console.log(`${indentation}TN${node.resultValue}`);
+            console.log(`${indentation}TN${node.getResultValue()}`);
         } else {
             console.error('ERROR: Not an InternalNode or TerminalNode.'); // Print an error message if the node type is invalid
         }
     }
 }
 
-module.exports = {InternalNode, TerminalNode, MDD};
+export { InternalNode, TerminalNode, MDD };
