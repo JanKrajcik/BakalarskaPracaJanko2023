@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MDD visualizer</title>
+    <title>MDD Visualizer</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -13,12 +13,12 @@
     <script type="module" src="../graph.js"></script>
     <script type="module" src="../table.js"></script>
     <script type="module" src="../diagram.js"></script>
-
 </head>
 <body>
 <div class="left-side" id="svg-container">
     <!-- The SVG content will be injected here via JavaScript -->
     <pre id="editor"></pre>
+
     <div id="options" style="display: none">
         <label id="raw" class="disabled">
             <input type="checkbox" disabled=""> Show raw output
@@ -35,7 +35,7 @@
         <input type="input" value="" id="shareurl">
 
     </div>
-    <div id="review">
+    <div id="viewCanvas">
         <div id="error"></div>
     </div>
     <div id="status"></div>
@@ -51,23 +51,166 @@
     <script src="viz.js" type="text/javascript" charset="utf-8"></script>
     <script src="svg-pan-zoom.min.js" type="text/javascript" charset="utf-8"></script>
     <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                const truthTable = new TruthTable([2, 2, 3], [0, 1, 2, 0, 1, 2, 0, 1, 2, 1, 1, 2]);
-                const mdd = truthTable.fromVector();
+        document.addEventListener("DOMContentLoaded", function () {
+            // Get references to DOM elements
+            const editor = document.getElementById("editor");
+            const toggleButton = document.getElementById("toggleEditorButton");
+            const viewCanvas = document.getElementById("viewCanvas");
+            const domainInput = document.getElementById("domain");
+            const truthVectorInput = document.getElementById("truthVector");
+            const separatorInput = document.getElementById("separator");
+            const renderButton = document.getElementById("renderButton");
+            const stylingCheckbox = document.getElementById("stylingCheckbox");
+            const colorCheckbox = document.getElementById("colorCheckbox");
 
-                const graph = new Graph();
-                graph.traverseMDD(mdd.getRoot());
-                const dOTString = graph.toDOTString();
+            // Function to render the graph (simplified)
+            function renderGraph() {
+                // Parse inputs
+                const domain = domainInput.value.split(separatorInput.value).map(Number);
+                const truthVector = truthVectorInput.value.split(separatorInput.value).map(Number);
 
+                // Validate inputs
+                if (!domain.every(Number.isFinite) || !truthVector.every(Number.isFinite)) {
+                    alert("Please enter valid comma-separated numbers for both inputs.");
+                    return;
+                }
 
-                if (typeof ace !== "undefined") {
-                    const editor = ace.edit("editor");
-                    editor.setTheme("ace/theme/twilight");
-                    editor.session.setMode("ace/mode/dot");
-                    editor.getSession().setValue(dOTString);
+                try {
+                    // Generate the TruthTable
+                    const truthTable = new TruthTable(domain, truthVector);
+                    const mdd = truthTable.fromVector();
+
+                    // Generate the graph
+                    const graph = new Graph();
+                    graph.traverseMDD(mdd.getRoot());
+
+                    // Apply styling and coloring settings
+                    if (stylingCheckbox.checked) {
+                        graph.setEdgeStyling(true);
+                    } else {
+                        graph.setEdgeStyling(false);
+                    }
+
+                    if (colorCheckbox.checked) {
+                        graph.setEdgeColoring(true);
+                    } else {
+                        graph.setEdgeColoring(false);
+                    }
+
+                    const dotString = graph.toDOTString();
+
+                    // Display the DOT string using Ace Editor
+                    if (typeof ace !== "undefined") {
+                        const aceEditor = ace.edit("editor");
+                        aceEditor.setTheme("ace/theme/twilight");
+                        aceEditor.session.setMode("ace/mode/dot");
+                        aceEditor.getSession().setValue(dotString);
+                    }
+                } catch (error) {
+                    console.error("Error generating graph:", error);
+                    alert("An error occurred while processing the inputs. Please check the console for details.");
+                }
+            }
+
+            // Attach event handlers
+            renderButton.addEventListener("click", renderGraph);
+
+            toggleButton.addEventListener("click", function () {
+                if (editor.style.display === "none") {
+                    // Show the editor
+                    editor.style.display = "block";
+                    editor.style.left = "0"; // Reset editor's position
+                    viewCanvas.style.left = "50%"; // Reset viewCanvas position
+                } else {
+                    // Hide the editor
+                    editor.style.display = "none";
+                    viewCanvas.style.left = "0"; // Extend viewCanvas to fill the left side
+                }
+
+                // Re-render the graph when toggling the editor
+                renderGraph();
+            });
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const exportButton = document.getElementById("exportButton");
+            const exportFormatSelect = document.getElementById("exportFormat");
+            const viewCanvas = document.getElementById("viewCanvas");
+
+            exportButton.addEventListener("click", function () {
+                const exportFormat = exportFormatSelect.value; // Get the selected format (SVG or PNG)
+
+                if (exportFormat === "svg") {
+                    exportAsSVG();
+                } else if (exportFormat === "png") {
+                    exportAsPNG();
+                } else {
+                    alert("Unsupported format selected.");
                 }
             });
 
+            function exportAsSVG() {
+                const svgElement = viewCanvas.querySelector("svg");
+
+                if (!svgElement) {
+                    alert("No SVG content found in viewCanvas.");
+                    return;
+                }
+
+                const serializer = new XMLSerializer();
+                const svgString = serializer.serializeToString(svgElement);
+
+                // Create a downloadable link
+                const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "viewCanvas.svg";
+                link.click();
+
+                // Revoke the object URL after use
+                URL.revokeObjectURL(url);
+            }
+
+            function exportAsPNG() {
+                const svgElement = viewCanvas.querySelector("svg");
+
+                if (!svgElement) {
+                    alert("No SVG content found in viewCanvas.");
+                    return;
+                }
+
+                const canvas = document.createElement("canvas");
+                const ctx = canvas.getContext("2d");
+
+                // Set canvas size to match the SVG dimensions
+                const svgRect = svgElement.getBoundingClientRect();
+                canvas.width = svgRect.width;
+                canvas.height = svgRect.height;
+
+                // Serialize SVG to string and create an image
+                const serializer = new XMLSerializer();
+                const svgString = serializer.serializeToString(svgElement);
+                const img = new Image();
+
+                img.onload = function () {
+                    // Draw the SVG on the canvas
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+
+                    // Create a downloadable link for the PNG
+                    const pngUrl = canvas.toDataURL("image/png");
+                    const link = document.createElement("a");
+                    link.href = pngUrl;
+                    link.download = "viewCanvas.png";
+                    link.click();
+                };
+
+                // Convert the SVG string to a data URL
+                img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgString);
+            }
+        });
     </script>
 </div>
 <div class="control-panel">
@@ -77,15 +220,23 @@
         <h3>Input</h3>
         <div class="form-control">
             <label for="domain"> Domain:</label>
-            <input type="text" id="domain" placeholder="Comma separated numbers, e.g., 2, 2, 3">
+            <input type="text" id="domain" placeholder="2, 2, 3">
         </div>
         <div class="form-control">
             <label for="truthVector"> Truth Vector:</label>
-            <input type="text" id="truthVector" placeholder="Comma separated numbers, e.g., 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2">
+            <input type="text" id="truthVector" placeholder="0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2">
         </div>
+        <div class="form-control">
+            <label for="separator">Separator:</label>
+            <select id="separator">
+                <option value=",">Comma</option>
+                <option value=" ">Space</option>
+            </select>
+
+        </div>
+
+        <button id="renderButton" class="button">Render Graph</button>
     </div>
-
-
 
     <!-- Configuration Section -->
     <div class="section">
@@ -103,22 +254,13 @@
     <!-- Export Options Section -->
     <div class="export-section">
         <h3>Export Options</h3>
+        <button id="toggleEditorButton" class="button">Toggle Editor</button>
         <div class="form-control">
             <label for="exportFormat">Export Format:</label>
             <select id="exportFormat">
-                <option value="png">PNG</option>
                 <option value="svg">SVG</option>
+                <option value="png">PNG</option>
             </select>
-            <label id="format">
-                <select>
-                    <option selected="">svg</option>
-                    <option>png-image-element</option>
-                    <option>json</option>
-                    <option>xdot</option>
-                    <option>plain</option>
-                    <option>ps</option>
-                </select>
-            </label>
         </div>
         <button id="exportButton" class="export-button">Export</button>
     </div>

@@ -5,6 +5,10 @@ body {
     font-family: Arial, sans-serif;
 }
 
+polygon {
+    fill: #eee;
+}
+
 .left-side {
     flex: 1;
     background-color: #f0f0f0;
@@ -47,8 +51,16 @@ body {
     min-width: 0; /* Prevent input from overflowing */
 }
 
+.button {
+    margin-left: auto;
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
 .export-button {
     margin-left: auto;
+    margin-right: auto;
     display: block;
     margin-top: 10px;
 }
@@ -62,7 +74,7 @@ body.presentation #options {
     left: 0;
 }
 
-body.presentation #review {
+body.presentation #viewCanvas {
     left: 0;
 }
 
@@ -75,7 +87,7 @@ body.presentation #review {
     left: 0;
 }
 
-#review {
+#viewCanvas {
     margin: 0;
     position: absolute;
     top: 50px;
@@ -121,7 +133,7 @@ body.presentation #review {
     z-index: 999;
 }
 
-#review svg {
+#viewCanvas svg {
     position: absolute;
     top: 0;
     left: 0;
@@ -129,7 +141,7 @@ body.presentation #review {
     height: 100%;
 }
 
-#review #text {
+#viewCanvas #text {
     font-size: 12px;
     font-family: monaco, courier, monospace;
     white-space: pre;
@@ -141,22 +153,22 @@ body.presentation #review {
     overflow: auto;
 }
 
-#review img {
+#viewCanvas img {
     display: block;
     margin: 0 auto;
 }
 
-#review.working svg, #output.error svg,
-#review.working #text, #output.error #text,
-#review.working img, #output.error img {
+#viewCanvas.working svg, #output.error svg,
+#viewCanvas.working #text, #output.error #text,
+#viewCanvas.working img, #output.error img {
     opacity: 0.4;
 }
 
-#review.error #error {
+#viewCanvas.error #error {
     display: inherit;
 }
 
-#review #error {
+#viewCanvas #error {
     display: none;
     position: absolute;
     top: 20px;

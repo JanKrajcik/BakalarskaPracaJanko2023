@@ -3,7 +3,7 @@
     window.URL = window.URL || window.webkitURL;
     var el_stetus = document.getElementById("status"),
         t_stetus = -1,
-        reviewer = document.getElementById("review"),
+        reviewer = document.getElementById("viewCanvas"),
         scale = window.devicePixelRatio || 1,
         downloadBtn = document.getElementById("download"),
         editor = ace.edit("editor"),

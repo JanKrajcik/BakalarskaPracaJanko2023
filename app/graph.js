@@ -13,11 +13,33 @@ class Graph {
         // Default edge colors for decisions (0: red, 1: black, 2: blue)
         this.edgeColors = ["red", "black", "blue"];
 
+        // Flag for styling edges based on the decision they represent
+        this.edgeStyling = true;
+
+        // Flag for coloring edges based on the decision they represent
+        this.edgeColoring = true;
+
         // Flag for displaying labels on edges
         this.labelsEnabled = true;
 
         // Flag for matching edge color with label color
         this.labelColorMatchesEdge = false;
+    }
+
+    /**
+     * Sets the edge styling based on the decision they represent
+     * @param {boolean} enabled - True to enable edge styling, false to disable.
+     */
+    setEdgeStyling(enabled) {
+        this.edgeStyling = enabled;
+    }
+
+    /**
+     * Sets the edge coloring based on the decision they represent
+     * @param {boolean} enabled - True to enable edge coloring, false to disable.
+     */
+    setEdgeColoring(enabled) {
+        this.edgeColoring = enabled;
     }
 
     /**
@@ -63,9 +85,9 @@ class Graph {
         if (!this.vertices.has(node)) {
             const vertexId = this.vertexId++;
             if (node instanceof TerminalNode) {
-                this.vertices.set(node, { id: vertexId, value: node.getResultValue()});
+                this.vertices.set(node, {id: vertexId, value: node.getResultValue()});
             } else {
-                this.vertices.set(node, { id: vertexId, index: node.index });
+                this.vertices.set(node, {id: vertexId, index: node.index});
             }
         }
         return this.vertices.get(node).id;
@@ -81,7 +103,7 @@ class Graph {
     addEdge(from, to, decision) {
         const edgeKey = `${from}-${to}-${decision}`; // Create a unique key for the edge
         if (!this.edges.has(edgeKey)) {
-            this.edges.set(edgeKey, { from, to, decision });
+            this.edges.set(edgeKey, {from, to, decision});
         }
     }
 
@@ -110,7 +132,7 @@ class Graph {
      * Generates the DOT representation of the graph, which can be used for visualization.
      * @returns {string} - The DOT string representing the graph.
      */
-   toDOTString() {
+    toDOTString() {
         let dotString = 'digraph DD {\n'; // Start of the DOT string
 
         // Set graph styling
@@ -146,23 +168,34 @@ class Graph {
         }
 
         // Add edges
-        for (const { from, to, decision } of this.edges.values()) {
-            let edgeStyle = this.edgeStyles[decision] || "solid"; // Get the edge style
-            let edgeColor = this.edgeColors[decision] || "black"; // Get the edge color
+        for (const {from, to, decision} of this.edges.values()) {
+            let edgeDefinition = `    ${from} -> ${to} [`; // Start edge definition
 
-            dotString += `    ${from} -> ${to} [style="${edgeStyle}", color="${edgeColor}"`; // Add edge
+            // Apply styling conditionally
+            if (this.edgeStyling) {
+                let edgeStyle = this.edgeStyles[decision] || "solid"; // Get the edge style
+                edgeDefinition += `style="${edgeStyle}"`;
+            }
+
+            // Apply coloring conditionally
+            if (this.edgeColoring) {
+                let edgeColor = this.edgeColors[decision] || "black"; // Get the edge color
+                edgeDefinition += `${this.edgeStyling ? ', ' : ''}color="${edgeColor}"`; // Add color if styling exists
+            }
 
             // Add label if labels are enabled
             if (this.labelsEnabled) {
-                let labelColor = this.labelColorMatchesEdge ? `, fontcolor="${edgeColor}"` : ''; // Determine label color based on settings
-                dotString += `, label="${decision}"${labelColor}`; // Add label to edge definition
+                let labelColor = (this.labelColorMatchesEdge && this.edgeColoring) ? `, fontcolor="${this.edgeColors[decision] || "black"}"` : ''; // Determine label color based on settings
+                edgeDefinition += `${this.edgeStyling || this.edgeColoring ? ', ' : ''}label="${decision}"${labelColor}`; // Add label to edge definition
             }
 
-            dotString += '];\n'; // End edge definition
+            edgeDefinition += '];\n'; // End edge definition
+            dotString += edgeDefinition;
         }
 
         dotString += '}'; // End the DOT string
         return dotString; // Return the generated DOT string
     }
 }
+
 window.Graph = Graph;
