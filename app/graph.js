@@ -7,6 +7,8 @@ class Graph {
         this.edges = new Map();    // Map to store edges with {from, to, decision}
         this.vertexId = 0;         // Unique identifier for each vertex
 
+        this.font = "Times-Roman"; // Default font for the whole graph
+
         // Default edge styles for decisions (0: dashed, 1: solid, 2: dotted)
         this.edgeStyles = ["dashed", "solid", "dotted"];
 
@@ -24,6 +26,14 @@ class Graph {
 
         // Flag for matching edge color with label color
         this.labelColorMatchesEdge = false;
+    }
+
+    /**
+     * Sets the font for the graph.
+     * @param {string} font - The font to set (e.g., "Arial", "Courier New").
+     */
+    setFont(font) {
+        this.font = font;
     }
 
     /**
@@ -135,15 +145,16 @@ class Graph {
     toDOTString() {
         let dotString = 'digraph DD {\n'; // Start of the DOT string
 
-        // Set graph styling
-        dotString += '    graph [fontname = "Times-Roman",\n' +
+        // Set basic graph styling
+        dotString += `    graph [fontname = "${this.font}",\n` +
             '                    splines = true,\n' +
             '                    overlap = false];\n' +
-            '    node [fontname = "Times-Roman",\n' +
+            `    node [fontname = "${this.font}",\n` +
             '                    fontsize = 18,\n' +
             '                    fixedsize = true];\n' +
-            '    edge [fontname = "Times-Roman",\n' +
+            `    edge [fontname = "${this.font}",\n` +
             '                    fontsize = 14];\n';
+
 
         let terminalNodeIDs = []; // Array to collect terminal node IDs
         for (const [node, vertex] of this.vertices.entries()) {

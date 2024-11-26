@@ -190,3 +190,15 @@ body.presentation #viewCanvas {
     border-bottom: 1px solid #333333;
     border-left: 1px solid #CCCCCC;
 }
+
+#edgeStyleMenu {
+    margin-top: 10px;
+    padding-left: 15px;
+    border-left: 2px solid #ccc;
+}
+
+#edgeColorMenu {
+    margin-top: 10px;
+    padding-left: 15px;
+    border-left: 2px solid #ccc;
+}

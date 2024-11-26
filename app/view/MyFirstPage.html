@@ -60,8 +60,48 @@
             const truthVectorInput = document.getElementById("truthVector");
             const separatorInput = document.getElementById("separator");
             const renderButton = document.getElementById("renderButton");
+
             const stylingCheckbox = document.getElementById("stylingCheckbox");
+            const edgeStyleMenu = document.getElementById("edgeStyleMenu");
+
             const colorCheckbox = document.getElementById("colorCheckbox");
+            const edgeColorMenu = document.getElementById("edgeColorMenu");
+
+            const labelsCheckbox = document.getElementById("labelsCheckbox");
+
+            const fontSelector = document.getElementById("Font");
+            const customFontInput = document.getElementById("customFontInput");
+            const customFontField = document.getElementById("customFont");
+
+            let selectedFont = "Times-Roman";
+
+            // Hide or unhide the styling menu based on the checkbox
+            stylingCheckbox.addEventListener("change", () => {
+                edgeStyleMenu.style.display = stylingCheckbox.checked ? "block" : "none";
+            });
+
+            // Hide or unhide edge color menu based on checkbox
+            colorCheckbox.addEventListener("change", () => {
+                edgeColorMenu.style.display = colorCheckbox.checked ? "block" : "none";
+            });
+
+            // Hide or unhide the custom font input based on the font selector
+            fontSelector.addEventListener("change", () => {
+                if (fontSelector.value === "myFont") {
+                    customFontInput.style.display = "flex";
+                } else {
+                    customFontInput.style.display = "none";
+                    selectedFont = fontSelector.value;
+                }
+            });
+
+            // Take input from custom font field
+            customFontField.addEventListener("input", () => {
+                if (fontSelector.value === "myFont") {
+                    selectedFont = customFontField.value || "Times-Roman"; // Default to "Times-Roman" if empty
+                }
+            });
+
 
             // Function to render the graph (simplified)
             function renderGraph() {
@@ -69,20 +109,51 @@
                 const domain = domainInput.value.split(separatorInput.value).map(Number);
                 const truthVector = truthVectorInput.value.split(separatorInput.value).map(Number);
 
-                // Validate inputs
+                // Check that all the numbers passed are valid
                 if (!domain.every(Number.isFinite) || !truthVector.every(Number.isFinite)) {
                     alert("Please enter valid comma-separated numbers for both inputs.");
                     return;
                 }
 
                 try {
-                    // Generate the TruthTable
                     const truthTable = new TruthTable(domain, truthVector);
                     const mdd = truthTable.fromVector();
 
                     // Generate the graph
                     const graph = new Graph();
+
                     graph.traverseMDD(mdd.getRoot());
+                    function applyEdgeStyles() {
+                        for (let i = 1; i <= 5; i++) {
+                            const styleSelector = document.getElementById(`edgeStyle${i}`);
+                            if (styleSelector) {
+                                graph.setEdgeStyle(i - 1, styleSelector.value); // Update graph edge styles
+                            }
+                        }
+                    }
+
+                    for (let i = 1; i <= 5; i++) {
+                        const styleSelector = document.getElementById(`edgeStyle${i}`);
+                        if (styleSelector) {
+                            styleSelector.addEventListener("change", applyEdgeStyles);
+                        }
+                    }
+
+                    function applyEdgeColors() {
+                        for (let i = 1; i <= 5; i++) {
+                            const colorSelector = document.getElementById(`edgeColor${i}`);
+                            if (colorSelector) {
+                                graph.setEdgeColor(i - 1, colorSelector.value); // Update graph edge colors
+                            }
+                        }
+                    }
+
+                    for (let i = 1; i <= 5; i++) {
+                        const colorSelector = document.getElementById(`edgeColor${i}`);
+                        if (colorSelector) {
+                            colorSelector.addEventListener("change", applyEdgeColors);
+                        }
+                    }
 
                     // Apply styling and coloring settings
                     if (stylingCheckbox.checked) {
@@ -97,9 +168,19 @@
                         graph.setEdgeColoring(false);
                     }
 
+                    if (labelsCheckbox.checked) {
+                        graph.setLabelsEnabled(true);
+                    } else {
+                        graph.setLabelsEnabled(false);
+                    }
+
+                    graph.setFont(selectedFont);
+                    applyEdgeStyles();
+                    applyEdgeColors();
+
                     const dotString = graph.toDOTString();
 
-                    // Display the DOT string using Ace Editor
+                    // Display the DOT string using Ace Editor (force the dot string to the editor to make implementation easier)
                     if (typeof ace !== "undefined") {
                         const aceEditor = ace.edit("editor");
                         aceEditor.setTheme("ace/theme/twilight");
@@ -112,9 +193,8 @@
                 }
             }
 
-            // Attach event handlers
+            // Event handlers
             renderButton.addEventListener("click", renderGraph);
-
             toggleButton.addEventListener("click", function () {
                 if (editor.style.display === "none") {
                     // Show the editor
@@ -130,86 +210,6 @@
                 // Re-render the graph when toggling the editor
                 renderGraph();
             });
-        });
-
-        document.addEventListener("DOMContentLoaded", function () {
-            const exportButton = document.getElementById("exportButton");
-            const exportFormatSelect = document.getElementById("exportFormat");
-            const viewCanvas = document.getElementById("viewCanvas");
-
-            exportButton.addEventListener("click", function () {
-                const exportFormat = exportFormatSelect.value; // Get the selected format (SVG or PNG)
-
-                if (exportFormat === "svg") {
-                    exportAsSVG();
-                } else if (exportFormat === "png") {
-                    exportAsPNG();
-                } else {
-                    alert("Unsupported format selected.");
-                }
-            });
-
-            function exportAsSVG() {
-                const svgElement = viewCanvas.querySelector("svg");
-
-                if (!svgElement) {
-                    alert("No SVG content found in viewCanvas.");
-                    return;
-                }
-
-                const serializer = new XMLSerializer();
-                const svgString = serializer.serializeToString(svgElement);
-
-                // Create a downloadable link
-                const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-                const url = URL.createObjectURL(blob);
-
-                const link = document.createElement("a");
-                link.href = url;
-                link.download = "viewCanvas.svg";
-                link.click();
-
-                // Revoke the object URL after use
-                URL.revokeObjectURL(url);
-            }
-
-            function exportAsPNG() {
-                const svgElement = viewCanvas.querySelector("svg");
-
-                if (!svgElement) {
-                    alert("No SVG content found in viewCanvas.");
-                    return;
-                }
-
-                const canvas = document.createElement("canvas");
-                const ctx = canvas.getContext("2d");
-
-                // Set canvas size to match the SVG dimensions
-                const svgRect = svgElement.getBoundingClientRect();
-                canvas.width = svgRect.width;
-                canvas.height = svgRect.height;
-
-                // Serialize SVG to string and create an image
-                const serializer = new XMLSerializer();
-                const svgString = serializer.serializeToString(svgElement);
-                const img = new Image();
-
-                img.onload = function () {
-                    // Draw the SVG on the canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    ctx.drawImage(img, 0, 0);
-
-                    // Create a downloadable link for the PNG
-                    const pngUrl = canvas.toDataURL("image/png");
-                    const link = document.createElement("a");
-                    link.href = pngUrl;
-                    link.download = "viewCanvas.png";
-                    link.click();
-                };
-
-                // Convert the SVG string to a data URL
-                img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgString);
-            }
         });
     </script>
 </div>
@@ -232,7 +232,6 @@
                 <option value=",">Comma</option>
                 <option value=" ">Space</option>
             </select>
-
         </div>
 
         <button id="renderButton" class="button">Render Graph</button>
@@ -245,9 +244,186 @@
             <input type="checkbox" id="stylingCheckbox">
             <label for="stylingCheckbox"> Styling</label>
         </div>
+
+        <div id="edgeStyleMenu" style="display: none; padding-left: 20px;">
+            <h4>Edge Styles</h4>
+
+            <div class="form-control">
+                <label for="edgeStyle1">Edge Style 0:</label>
+                <select id="edgeStyle1">
+                    <option value="solid">Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted" selected>Dotted</option>
+                    <option value="bold">Bold</option>
+                    <option value="invis">Invisible</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label for="edgeStyle2">Edge Style 1:</label>
+                <select id="edgeStyle2">
+                    <option value="solid">Solid</option>
+                    <option value="dashed" selected>Dashed</option>
+                    <option value="dotted">Dotted</option>
+                    <option value="bold">Bold</option>
+                    <option value="invis">Invisible</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label for="edgeStyle3">Edge Style 2:</label>
+                <select id="edgeStyle3">
+                    <option value="solid" selected>Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
+                    <option value="bold">Bold</option>
+                    <option value="invis">Invisible</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label for="edgeStyle4">Edge Style 3:</label>
+                <select id="edgeStyle4">
+                    <option value="solid">Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
+                    <option value="bold" selected>Bold</option>
+                    <option value="invis">Invisible</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label for="edgeStyle5">Edge Style 4:</label>
+                <select id="edgeStyle5">
+                    <option value="solid">Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
+                    <option value="bold" selected>Bold</option>
+                    <option value="invis">Invisible</option>
+                </select>
+            </div>
+        </div>
         <div class="form-control">
             <input type="checkbox" id="colorCheckbox">
-            <label for="stylingCheckbox"> Color</label>
+            <label for="colorCheckbox"> Color</label>
+        </div>
+
+        <div id="edgeColorMenu" style="display: none; padding-left: 20px;">
+            <h4>Edge Colors</h4>
+            <div class="form-control">
+                <label for="edgeColor1">Edge Color 1:</label>
+                <select id="edgeColor1">
+                    <option value="black">Black</option>
+                    <option value="red" selected>Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="orange">Orange</option>
+                    <option value="purple">Purple</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="cyan">Cyan</option>
+                    <option value="magenta">Magenta</option>
+                    <option value="brown">Brown</option>
+                    <option value="gray">Gray</option>
+                    <option value="pink">Pink</option>
+                    <option value="lime">Lime</option>
+                    <option value="navy">Navy</option>
+                    <option value="teal">Teal</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label for="edgeColor2">Edge Color 2:</label>
+                <select id="edgeColor2">
+                    <option value="black">Black</option>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="orange" selected>Orange</option>
+                    <option value="purple">Purple</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="cyan">Cyan</option>
+                    <option value="magenta">Magenta</option>
+                    <option value="brown">Brown</option>
+                    <option value="gray">Gray</option>
+                    <option value="pink">Pink</option>
+                    <option value="lime">Lime</option>
+                    <option value="navy">Navy</option>
+                    <option value="teal">Teal</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label for="edgeColor3">Edge Color 3:</label>
+                <select id="edgeColor3">
+                    <option value="black" selected>Black</option>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="orange">Orange</option>
+                    <option value="purple">Purple</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="cyan">Cyan</option>
+                    <option value="magenta">Magenta</option>
+                    <option value="brown">Brown</option>
+                    <option value="gray">Gray</option>
+                    <option value="pink">Pink</option>
+                    <option value="lime">Lime</option>
+                    <option value="navy">Navy</option>
+                    <option value="teal">Teal</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label for="edgeColor4">Edge Color 4:</label>
+                <select id="edgeColor4">
+                    <option value="black">Black</option>
+                    <option value="red">Red</option>
+                    <option value="blue" selected>Blue</option>
+                    <option value="green">Green</option>
+                    <option value="orange">Orange</option>
+                    <option value="purple">Purple</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="cyan">Cyan</option>
+                    <option value="magenta">Magenta</option>
+                    <option value="brown">Brown</option>
+                    <option value="gray">Gray</option>
+                    <option value="pink">Pink</option>
+                    <option value="lime">Lime</option>
+                    <option value="navy">Navy</option>
+                    <option value="teal">Teal</option>
+                </select>
+            </div>
+            <div class="form-control">
+                <label for="edgeColor5">Edge Color 5:</label>
+                <select id="edgeColor5">
+                    <option value="black">Black</option>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="orange">Orange</option>
+                    <option value="purple" selected>Purple</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="cyan">Cyan</option>
+                    <option value="magenta">Magenta</option>
+                    <option value="brown">Brown</option>
+                    <option value="gray">Gray</option>
+                    <option value="pink">Pink</option>
+                    <option value="lime">Lime</option>
+                    <option value="navy">Navy</option>
+                    <option value="teal">Teal</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-control">
+            <label for="Font">Font:</label>
+            <select id="Font">
+                <option value="Times-Roman">Times New Roman</option>
+                <option value="Arial">Arial</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Helvetica">Helvetica</option>
+                <option value="myFont">My own font</option>
+            </select>
+        </div>
+        <div class="form-control">
+            <input type="checkbox" id="labelsCheckbox" checked>
+            <label for="labelsCheckbox"> Show Labels</label>
+        </div>
+        <div class="form-control" id="customFontInput" style="display: none;">
+            <label for="customFont">Custom font:</label>
+            <input type="text" id="customFont" placeholder="Custom font name">
         </div>
     </div>
 
