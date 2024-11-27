@@ -1,5 +1,4 @@
-import { TruthTable } from "./table.js";
-import { TerminalNode, InternalNode, MDD } from "./diagram.js";
+import { TerminalNode, InternalNode} from "./diagram.js";
 
 class Graph {
     constructor() {
@@ -97,7 +96,7 @@ class Graph {
             if (node instanceof TerminalNode) {
                 this.vertices.set(node, {id: vertexId, value: node.getResultValue()});
             } else {
-                this.vertices.set(node, {id: vertexId, index: node.index});
+                this.vertices.set(node, {id: vertexId, index: node.getIndex()});
             }
         }
         return this.vertices.get(node).id;
@@ -143,7 +142,7 @@ class Graph {
      * @returns {string} - The DOT string representing the graph.
      */
     toDOTString() {
-        let dotString = 'digraph DD {\n'; // Start of the DOT string
+        let dotString = 'digraph DD {\n';
 
         // Set basic graph styling
         dotString += `    graph [fontname = "${this.font}",\n` +
@@ -156,23 +155,25 @@ class Graph {
             '                    fontsize = 14];\n';
 
 
-        let terminalNodeIDs = []; // Array to collect terminal node IDs
+        let terminalNodeIDs = [];
         for (const [node, vertex] of this.vertices.entries()) {
             if (node instanceof TerminalNode) {
-                terminalNodeIDs.push(vertex.id); // Collect IDs of terminal nodes
+                terminalNodeIDs.push(vertex.id);
             }
         }
 
         if (terminalNodeIDs.length > 0) {
-            dotString += `    node [shape = square] ${terminalNodeIDs.join(' ')};\n`; // Set terminal nodes to square shape
+            // Set terminal nodes to square shape
+            dotString += `    node [shape = square] ${terminalNodeIDs.join(' ')};\n`;
         }
 
-        dotString += '    node [shape = circle];\n'; // Set internal nodes to circular shape
+        // Set internal nodes to circular shape
+        dotString += '    node [shape = circle];\n';
 
         // Add vertices
         for (const [node, vertex] of this.vertices.entries()) {
             if (node instanceof TerminalNode) {
-                dotString += `    ${vertex.id} [label = "${vertex.value}"];\n`; // Add terminal node with its value
+                dotString += `    ${vertex.id} [label = "${vertex.value}"];\n`;
             } else {
                 dotString += `${vertex.id} [label = <x<sub><font point-size="10">${vertex.index}</font></sub>>];\n`; // Add internal node with index as subscript
             }
@@ -180,32 +181,32 @@ class Graph {
 
         // Add edges
         for (const {from, to, decision} of this.edges.values()) {
-            let edgeDefinition = `    ${from} -> ${to} [`; // Start edge definition
+            let edgeDefinition = `    ${from} -> ${to} [`;
 
-            // Apply styling conditionally
+            // Apply styling
             if (this.edgeStyling) {
-                let edgeStyle = this.edgeStyles[decision] || "solid"; // Get the edge style
+                let edgeStyle = this.edgeStyles[decision] || "solid";
                 edgeDefinition += `style="${edgeStyle}"`;
             }
 
-            // Apply coloring conditionally
+            // Apply coloring
             if (this.edgeColoring) {
-                let edgeColor = this.edgeColors[decision] || "black"; // Get the edge color
-                edgeDefinition += `${this.edgeStyling ? ', ' : ''}color="${edgeColor}"`; // Add color if styling exists
+                let edgeColor = this.edgeColors[decision] || "black";
+                edgeDefinition += `${this.edgeStyling ? ', ' : ''}color="${edgeColor}"`;
             }
 
             // Add label if labels are enabled
             if (this.labelsEnabled) {
-                let labelColor = (this.labelColorMatchesEdge && this.edgeColoring) ? `, fontcolor="${this.edgeColors[decision] || "black"}"` : ''; // Determine label color based on settings
-                edgeDefinition += `${this.edgeStyling || this.edgeColoring ? ', ' : ''}label="${decision}"${labelColor}`; // Add label to edge definition
+                let labelColor = (this.labelColorMatchesEdge && this.edgeColoring) ? `, fontcolor="${this.edgeColors[decision] || "black"}"` : '';
+                edgeDefinition += `${this.edgeStyling || this.edgeColoring ? ', ' : ''}label="${decision}"${labelColor}`;
             }
 
-            edgeDefinition += '];\n'; // End edge definition
+            edgeDefinition += '];\n';
             dotString += edgeDefinition;
         }
 
-        dotString += '}'; // End the DOT string
-        return dotString; // Return the generated DOT string
+        dotString += '}';
+        return dotString;
     }
 }
 
