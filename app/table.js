@@ -1,8 +1,5 @@
-//const {Diagram} = require('./Diagram.js');
-import {/*TerminalNode, InternalNode,*/ MDD} from "./diagram.js";
+import {MDD} from "./diagram.js";
 import {NodeFactory} from './nodeFactory.js';
-//import seedrandom from 'seedrandom.js';  // Import the seedrandom library
-
 
 /**
  * Represents a Truth Table used for evaluating logical expressions.

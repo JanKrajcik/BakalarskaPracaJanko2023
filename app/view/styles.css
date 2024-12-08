@@ -41,6 +41,21 @@ polygon {
     align-items: center;
 }
 
+.export-section {
+    position: relative;
+    background-color: #e0e0e0;
+}
+
+.export-button-container {
+    display: flex;
+    align-items: center;
+}
+
+.export-button-container a {
+    margin-top: 10px;
+    margin-right: 3px;
+}
+
 .form-control label {
     width: 25%;
     margin-left: 10px;
