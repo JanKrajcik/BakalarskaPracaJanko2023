@@ -144,16 +144,26 @@ class Graph {
     toDOTString() {
         let dotString = 'digraph DD {\n';
 
-        // Set basic graph styling
-        dotString += `    graph [fontname = "${this.font}",\n` +
-            '                    splines = true,\n' +
-            '                    overlap = false];\n' +
-            `    node [fontname = "${this.font}",\n` +
-            '                    fontsize = 18,\n' +
-            '                    fixedsize = true];\n' +
-            `    edge [fontname = "${this.font}",\n` +
-            '                    fontsize = 14];\n';
+        dotString += this.getCoreGraphStyling();
 
+        // Add vertices (terminal and internal nodes)
+        dotString += this.getVertexDefinitions();
+
+        // Add edges
+        dotString += this.getEdgeDefinitions();
+
+        dotString += '}';
+        return dotString;
+    }
+
+    getCoreGraphStyling() {
+        return `    graph [fontname = "${this.font}", splines = true, overlap = false];\n` +
+            `    node [fontname = "${this.font}", fontsize = 18, fixedsize = true];\n` +
+            `    edge [fontname = "${this.font}", fontsize = 14];\n`;
+    }
+
+    getVertexDefinitions() {
+        let vertexDefinitions = '';
 
         let terminalNodeIDs = [];
         for (const [node, vertex] of this.vertices.entries()) {
@@ -163,50 +173,74 @@ class Graph {
         }
 
         if (terminalNodeIDs.length > 0) {
-            // Set terminal nodes to square shape
-            dotString += `    node [shape = square] ${terminalNodeIDs.join(' ')};\n`;
+            vertexDefinitions += `    node [shape = square] ${terminalNodeIDs.join(' ')};\n`;
         }
 
-        // Set internal nodes to circular shape
-        dotString += '    node [shape = circle];\n';
+        vertexDefinitions += '    node [shape = circle];\n';
 
-        // Add vertices
+        // Add vertex labels
         for (const [node, vertex] of this.vertices.entries()) {
             if (node instanceof TerminalNode) {
-                dotString += `    ${vertex.id} [label = "${vertex.value}"];\n`;
+                vertexDefinitions += `    ${vertex.id} [label = "${vertex.value}"];\n`;
             } else {
-                dotString += `${vertex.id} [label = <x<sub><font point-size="10">${vertex.index}</font></sub>>];\n`; // Add internal node with index as subscript
+                vertexDefinitions += `    ${vertex.id} [label = <x<sub><font point-size="10">${vertex.index}</font></sub>>];\n`;
             }
         }
 
-        // Add edges
-        for (const {from, to, decision} of this.edges.values()) {
-            let edgeDefinition = `    ${from} -> ${to} [`;
+        return vertexDefinitions;
+    }
 
-            // Apply styling
+    getEdgeDefinitions() {
+        let edgeDefinitions = '';
+
+        // Add edges
+        for (const { from, to, decision } of this.edges.values()) {
+            let edgeAttributes = [];
+
+            // Apply styling if enabled
             if (this.edgeStyling) {
                 let edgeStyle = this.edgeStyles[decision] || "solid";
-                edgeDefinition += `style="${edgeStyle}"`;
+                edgeAttributes.push(`style="${edgeStyle}"`);
             }
 
-            // Apply coloring
+            // Apply coloring if enabled
             if (this.edgeColoring) {
                 let edgeColor = this.edgeColors[decision] || "black";
-                edgeDefinition += `${this.edgeStyling ? ', ' : ''}color="${edgeColor}"`;
+                edgeAttributes.push(`color="${edgeColor}"`);
             }
 
             // Add label if labels are enabled
             if (this.labelsEnabled) {
-                let labelColor = (this.labelColorMatchesEdge && this.edgeColoring) ? `, fontcolor="${this.edgeColors[decision] || "black"}"` : '';
-                edgeDefinition += `${this.edgeStyling || this.edgeColoring ? ', ' : ''}label="${decision}"${labelColor}`;
+                let label = `label="${decision}"`;
+                if (this.labelColorMatchesEdge && this.edgeColoring) {
+                    let fontColor = `fontcolor="${this.edgeColors[decision] || "black"}"`;
+                    edgeAttributes.push(`${label}, ${fontColor}`);
+                } else {
+                    edgeAttributes.push(label);
+                }
             }
 
-            edgeDefinition += '];\n';
-            dotString += edgeDefinition;
+            // Join everything with a space and a comma
+            const attributesString = edgeAttributes.join(', ');
+            edgeDefinitions += `    ${from} -> ${to} [${attributesString}];\n`;
         }
 
-        dotString += '}';
-        return dotString;
+
+        return edgeDefinitions;
+    }
+
+    getEdgeStyling(decision) {
+        let styling = '';
+
+        if (this.edgeStyling) {
+            styling += `style="${this.edgeStyles[decision] || "solid"}"`;
+        }
+
+        if (this.edgeColoring) {
+            styling += `${styling.trim() ? ', ' : ''}color="${this.edgeColors[decision] || "black"}"`;
+        }
+
+        return styling;
     }
 }
 
