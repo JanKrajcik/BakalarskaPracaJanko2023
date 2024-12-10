@@ -10,6 +10,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
+    <script src="./viz.js" type="text/javascript"></script>
+    <script src="./full.render.js" type="text/javascript"></script>
     <script type="module" src="../graph.js"></script>
     <script type="module" src="../table.js"></script>
     <script type="module" src="../diagram.js"></script>
@@ -64,18 +66,18 @@
             const dynamicEdgeColorMenu = document.getElementById("dynamicEdgeColorMenu");
 
             const stylingCheckbox = document.getElementById("stylingCheckbox");
-            const edgeStyleMenu = document.getElementById("edgeStyleMenu");
-
             const colorCheckbox = document.getElementById("colorCheckbox");
-            const edgeColorMenu = document.getElementById("edgeColorMenu");
-
-            const labelsCheckbox = document.getElementById("labelsCheckbox");
 
             const fontSelector = document.getElementById("Font");
             const customFontInput = document.getElementById("customFontInput");
             const customFontField = document.getElementById("customFont");
 
+            const labelsCheckbox = document.getElementById("labelsCheckbox");
+
+            const formatSelector = document.getElementById("format");
+
             let selectedFont = "Times-Roman";
+            let graph;
 
             // Take input from custom font field
             customFontField.addEventListener("input", () => {
@@ -85,7 +87,7 @@
             });
 
 
-            // Function to render the graph (simplified)
+            // Function to render the graph on the canvas
             function renderGraph() {
                 // Parse inputs
                 const domain = domainInput.value.split(separatorInput.value).map(Number);
@@ -102,7 +104,7 @@
                     const mdd = truthTable.fromVector();
 
                     // Generate the graph
-                    const graph = new Graph();
+                    graph = new Graph();
 
                     graph.traverseMDD(mdd.getRoot());
 
@@ -143,6 +145,8 @@
             }
 
 
+            // Updates the dynamic menus for edge styles and colors based on the maximum domain size.
+            // This function ensures that the number of menus corresponds to the highest domain size specified.
             function updateDynamicMenus() {
                 const domain = domainInput.value.split(separatorInput.value).map(Number);
                 const maxEdges = Math.max(...domain);
@@ -191,7 +195,7 @@
                 }
             }
 
-            // Hide or show menus based on checkboxes
+            // Toggle menus based on checkboxes
             function toggleDynamicMenus() {
                 if (stylingCheckbox.checked) {
                     dynamicEdgeStyleMenu.style.display = "block";
@@ -215,7 +219,7 @@
             stylingCheckbox.addEventListener("change", toggleDynamicMenus);
             colorCheckbox.addEventListener("change", toggleDynamicMenus);
 
-            // Hide or unhide the custom font input based on the font selector
+            // Toggle the custom font input based on the font selector
             fontSelector.addEventListener("change", () => {
                 if (fontSelector.value === "myFont") {
                     customFontInput.style.display = "flex";
@@ -224,6 +228,9 @@
                     selectedFont = fontSelector.value;
                 }
             });
+
+            // Initial setup of the dynamic menus (if by default the checkboxes are checked, the menus should be visible, vice versa)
+            toggleDynamicMenus();
 
             // Graph rendering stuff
             renderButton.addEventListener("click", renderGraph);
@@ -239,12 +246,83 @@
                     viewCanvas.style.left = "0"; // Extend viewCanvas to fill the left side
                 }
 
-                // Re-render the graph when toggling the editor
+                // Re-render the graph when toggling the editor. This centers the graph to the middle of the viewCanvas.
                 renderGraph();
             });
 
-            // Initial setup of the dynamic menus (if by default the checkboxes are checked, the menus should be visible, vice versa)
-            toggleDynamicMenus();
+            // Export button stuff
+            exportButton.addEventListener("click", exportGraph);
+            document.getElementById("pngExportButton").addEventListener("click", exportGraph);
+
+            // Export graph as an SVG or PNG image
+            async function exportGraph(event) {
+                try {
+                    // Get dot string from editor
+                    const aceEditor = ace.edit("editor");
+                    const dotString = aceEditor.getSession().getValue();
+
+                    if (!dotString.trim()) {
+                        alert("No graph to export. Please generate the graph first.");
+                        return;
+                    }
+
+                    // Convert DOT string to SVG or PNG using Viz.js
+                    const viz = new Viz({ workerURL: './full.render.js' });
+                    const format = event.target.id === "pngExportButton" ? "png" : formatSelector.value;
+
+                    if (format === "svg") {
+                        const svgElement = await viz.renderSVGElement(dotString);
+                        const serializer = new XMLSerializer();
+                        const svgString = serializer.serializeToString(svgElement);
+
+                        // Create a downloadable link for the SVG
+                        const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement("a");
+                        link.href = url;
+                        link.download = "graph.svg";
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    } else if (format === "png") {
+                        // If format is png, create svg, serialize to canvas and download as png
+                        const svgElement = await viz.renderSVGElement(dotString);
+                        const canvas = document.createElement("canvas");
+                        const ctx = canvas.getContext("2d");
+                        const img = new Image();
+
+                        img.onload = function () {
+                            // Set canvas size to the image size multiplied by the scale factor
+                            const scaleFactor = 10; // This value can be adjusted to increase the resolution
+                            canvas.width = img.width * scaleFactor;
+                            canvas.height = img.height * scaleFactor;
+
+                            // Scale the context to increase the resolution
+                            ctx.scale(scaleFactor, scaleFactor);
+
+                            // Draw the image onto the canvas
+                            ctx.drawImage(img, 0, 0);
+
+                            // Create a Blob from the canvas and trigger the download
+                            canvas.toBlob((blob) => {
+                                const link = document.createElement("a");
+                                link.href = URL.createObjectURL(blob);
+                                link.download = "graph.png";
+                                link.click();
+                            }, "image/png");
+                        };
+
+                        // Set the source of the image to the SVG data URL
+                        img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgElement.outerHTML)));
+                    } else {
+                        alert("Unsupported export format selected.");
+                    }
+                } catch (error) {
+                    console.error("Error during export:", error);
+                    alert("An error occurred while exporting the graph. Check the console for details.");
+                }
+            }
         });
     </script>
 </div>
@@ -317,10 +395,10 @@
         <h3>Export Options</h3>
         <button id="toggleEditorButton" class="button">Toggle Editor</button>
         <div class="form-control">
-            <label for="exportFormat">Export Format:</label>
-            <select id="exportFormat">
-                <option value="svg">SVG</option>
-                <option value="png">PNG</option>
+            <label for="format">Export Format:</label>
+            <select id="format">
+                <option value="svg">svg</option>
+                <option value="png">png</option>
             </select>
         </div>
         <div class="export-button-container">
