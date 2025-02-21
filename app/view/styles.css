@@ -101,7 +101,7 @@ body.presentation #viewCanvas {
     position: absolute;
     top: 0;
     bottom: 0;
-    right: 50%;
+    right: 55%;
     left: 0;
 }
 
@@ -111,7 +111,7 @@ body.presentation #viewCanvas {
     top: 50px;
     bottom: 0;
     right: 0;
-    left: 50%;
+    left: 45%;
     overflow: scroll;
 }
 
