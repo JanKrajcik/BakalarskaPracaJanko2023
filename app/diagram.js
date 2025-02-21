@@ -1,9 +1,4 @@
 /**
- * Changelog:
- *  -fromVector and shrinkStack methods actually work.
- */
-
-/**
  * Class InternalNode representing one InternalNode in diagram.
  * It has its index and holds array of its
  *  successors (other instances of InternalNode class).
@@ -255,3 +250,8 @@ class MDD {
 }
 
 export { InternalNode, TerminalNode, MDD };
+
+// Enable CommonJS only if running in Node.js (Jest)
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+    module.exports = { InternalNode, TerminalNode, MDD };
+}

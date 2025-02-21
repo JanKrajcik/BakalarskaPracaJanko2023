@@ -1,5 +1,6 @@
 import { TerminalNode, InternalNode} from "./diagram.js";
 
+
 class Graph {
     constructor() {
         this.vertices = new Map(); // Map to store vertices by node reference
@@ -244,4 +245,7 @@ class Graph {
     }
 }
 
-window.Graph = Graph;
+
+if (typeof window !== 'undefined') {
+    window.Graph = Graph;
+}

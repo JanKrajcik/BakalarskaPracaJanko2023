@@ -1,4 +1,5 @@
 import { TerminalNode, InternalNode } from "./diagram.js";
+
 /**
  * NodeFactory class responsible for creating nodes in the Multi-Decision Diagram (MDD).
  */
@@ -102,3 +103,8 @@ class NodeFactory {
 }
 
 export { NodeFactory };
+
+// Enable CommonJS only if running in Node.js (Jest)
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+    module.exports = { NodeFactory };
+}

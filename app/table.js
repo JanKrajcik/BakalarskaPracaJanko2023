@@ -1,5 +1,5 @@
-import {MDD} from "./diagram.js";
-import {NodeFactory} from './nodeFactory.js';
+import { MDD } from "./diagram.js";
+import { NodeFactory } from "./nodeFactory.js";
 
 /**
  * Represents a Truth Table used for evaluating logical expressions.
@@ -178,5 +178,12 @@ class TruthTable {
     }
 }
 
-window.TruthTable = TruthTable;
+if (typeof window !== 'undefined') {
+    window.TruthTable = TruthTable;
+}
+
 export { TruthTable };
+// Enable CommonJS only if running in Node.js (Jest)
+if (typeof module !== "undefined" && typeof module.exports !== "undefined") {
+    module.exports = { TruthTable };
+}

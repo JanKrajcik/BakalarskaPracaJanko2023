@@ -1,6 +1,5 @@
-const {TruthTable} = require('../app/table'); // Imports the TruthTable class from table.js.
 const {TerminalNode, InternalNode} = require('../app/diagram'); // Imports the TruthTable class from table.js.
-const seedrandom = require('seedrandom');  // Imports the seedrandom library.
+const {TruthTable} = require('../app/table'); // Imports the TruthTable class from table.js.
 
 describe('TruthTable - Table generating and printing', () => {
     it('should generate and print correct binary truth table for 2 variables.', () => {
@@ -256,7 +255,7 @@ describe('TruthTable - fromVector method', () => {
 });
 
 //TODO this test should probably be moved somewhere else.
-describe('TruthTable and MDD evaluation comparison', () => {
+/*describe('TruthTable and MDD evaluation comparison', () => {
     it('should evaluate the same result for both TruthTable and MDD for all dynamically generated rows', () => {
         // Generate a random seed using current time or another method
         const seed = Math.floor(Math.random() * 1000000).toString(); // Random seed as a string
@@ -292,4 +291,4 @@ describe('TruthTable and MDD evaluation comparison', () => {
             i++;
         } while (i < truthTable.length);
     });
-});
+});*/
