@@ -1,4 +1,5 @@
 const {InternalNode, TerminalNode, MDD} = require('../app/diagram'); // Imports the InternalNode, TerminalNode and MDD class from diagram.js.
+import seedrandom from "seedrandom";
 
 /**
  *  README README README README README README README README README README README README README README
@@ -10,9 +11,22 @@ const {InternalNode, TerminalNode, MDD} = require('../app/diagram'); // Imports 
  */
 
 describe('InternalNode', () => {
-    it('should have the correct index', () => {
+    it('should have the correct index - static test', () => {
         const internalNode = new InternalNode(42);
         expect(internalNode.getIndex()).toBe(42);
+    });
+
+    it("should have the correct index - dynamic test", () => {
+        // Generate new seed each test run, but log it for reproducibility
+        const seed = Date.now().toString();
+        console.log(`Test seed: ${seed}`);
+        const rng = seedrandom(seed);
+
+        for (let i = 0; i < 100; i++) {
+            const randomIndex = Math.floor(rng() * 1000);
+            const internalNode = new InternalNode(randomIndex);
+            expect(internalNode.getIndex()).toBe(randomIndex);
+        }
     });
 
     it('should return 0 for a new InternalNode without successors', () => {
@@ -31,6 +45,30 @@ describe('InternalNode', () => {
         expect(internalNode0.getSuccessorsCount()).toBe(2);
     });
 
+    it("should return the number of successors added - dynamic test", () => {
+        // Generate new seed each test run, but log it, if the test fails, it can be reproduced.
+        const seed = Date.now().toString();
+        console.log(`Test seed: ${seed}`);
+        const rng = seedrandom(seed);
+
+
+        for (let i = 0; i < 100; i++) {
+            const randomIndex0 = Math.floor(rng() * 1000);
+            const randomIndex1 = Math.floor(rng() * 1000);
+            const randomIndex2 = Math.floor(rng() * 1000);
+
+            const internalNode0 = new InternalNode(randomIndex0);
+            const internalNode1 = new InternalNode(randomIndex1);
+            const internalNode2 = new InternalNode(randomIndex2);
+
+            internalNode0.addSuccessor(internalNode1);
+            internalNode0.addSuccessor(internalNode2);
+
+            expect(internalNode0.getSuccessorsCount()).toBe(2);
+        }
+    });
+
+
     it('should return a successor based on its index', () => {
         const internalNode0 = new InternalNode(1);
         const internalNode1 = new InternalNode(2);
@@ -43,10 +81,45 @@ describe('InternalNode', () => {
         expect(successor).toBe(internalNode2);
     });
 
+    it("should return a successor based on its index - dynamic test", () => {
+        const seed = Date.now().toString();
+        console.log(`Test seed: ${seed}`);
+        const rng = seedrandom(seed);
+
+        for (let i = 0; i < 100; i++) {
+            const randomIndex0 = Math.floor(rng() * 1000);
+            const randomIndex1 = Math.floor(rng() * 1000);
+            const randomIndex2 = Math.floor(rng() * 1000);
+
+            const internalNode0 = new InternalNode(randomIndex0);
+            const internalNode1 = new InternalNode(randomIndex1);
+            const internalNode2 = new InternalNode(randomIndex2);
+
+            internalNode0.addSuccessor(internalNode1);
+            internalNode0.addSuccessor(internalNode2);
+
+            const successor = internalNode0.getSuccessor(1);
+            expect(successor).toBe(internalNode2);
+        }
+    });
+
     it('should return null for an invalid successor index', () => {
         const internalNode = new InternalNode(1);
         const successor = internalNode.getSuccessor(1);
         expect(successor).toBeNull();
+    });
+
+    it("should return null for an invalid successor index - dynamic test", () => {
+        const seed = Date.now().toString();
+        console.log(`Test seed: ${seed}`);
+        const rng = seedrandom(seed);
+
+        for (let i = 0; i < 100; i++) {
+            const randomIndex = Math.floor(rng() * 1000);
+            const internalNode = new InternalNode(randomIndex);
+            const successor = internalNode.getSuccessor(1);
+            expect(successor).toBeNull();
+        }
     });
 });
 
