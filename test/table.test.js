@@ -140,9 +140,9 @@ describe('TruthTable - fromTable', () => {
         expect(tableOfTruth._nodeFactory._terminalTable.get(2)).toBeInstanceOf(TerminalNode);
 
         // Assert the values of created terminalNodes.
-        expect(tableOfTruth._nodeFactory._terminalTable.get(0).value).toBe(0);
-        expect(tableOfTruth._nodeFactory._terminalTable.get(1).value).toBe(1);
-        expect(tableOfTruth._nodeFactory._terminalTable.get(2).value).toBe(2);
+        expect(tableOfTruth._nodeFactory._terminalTable.get(0)._value).toBe(0);
+        expect(tableOfTruth._nodeFactory._terminalTable.get(1)._value).toBe(1);
+        expect(tableOfTruth._nodeFactory._terminalTable.get(2)._value).toBe(2);
     });
 
     it('should create only one InternalNode for each specific node instance, as no duplicates are allowed.', () => {

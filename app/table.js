@@ -55,7 +55,7 @@ class TruthTable {
 
     /**
      * Generates and returns the truth table based on the domains.
-     * @returns {Array[]} The generated truth table.
+     * @returns {number[]} The generated truth table.
      */
     getTruthTable() {
         let truthTable;

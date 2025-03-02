@@ -1,6 +1,9 @@
 import { TerminalNode, InternalNode} from "./diagram.js";
 
-
+/**
+ * Class representing the Graph structure used for visualization.
+ * It stores vertices, edges, and provides methods to generate DOT representations.
+ */
 class Graph {
     constructor() {
         this.vertices = new Map(); // Map to store vertices by node reference
@@ -157,12 +160,20 @@ class Graph {
         return dotString;
     }
 
+    /**
+     *  Generates Graph header information.
+     * @returns {string}
+     */
     getCoreGraphStyling() {
         return `    graph [fontname = "${this.font}", splines = true, overlap = false];\n` +
             `    node [fontname = "${this.font}", fontsize = 18, fixedsize = true];\n` +
             `    edge [fontname = "${this.font}", fontsize = 14];\n`;
     }
 
+    /**
+     * Generates vertex definitions with all modifications done.
+     * @returns {string}
+     */
     getVertexDefinitions() {
         let vertexDefinitions = '';
 
@@ -191,6 +202,10 @@ class Graph {
         return vertexDefinitions;
     }
 
+    /**
+     * Generates edge definitions with all modifications done.
+     * @returns {string}
+     */
     getEdgeDefinitions() {
         let edgeDefinitions = '';
 
@@ -230,6 +245,11 @@ class Graph {
         return edgeDefinitions;
     }
 
+    /**
+     * Returns edge styling for certain decision.
+     * @param decision - number representation of decision
+     * @returns {string}
+     */
     getEdgeStyling(decision) {
         let styling = '';
 
