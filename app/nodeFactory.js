@@ -61,7 +61,7 @@ class NodeFactory {
      * for each unique value, only one terminal node exists in the system. This approach supports node reuse,
      * minimizes memory consumption, and prevents the proliferation of duplicate terminal nodes.
      *
-     * @param {*} value - The value for the terminal node.
+     * @param {number} value - The value for the terminal node.
      * @returns {TerminalNode} A terminal node corresponding to the specified value.
      */
     createTerminalNode(value) {

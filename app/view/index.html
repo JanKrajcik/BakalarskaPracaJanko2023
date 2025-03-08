@@ -42,287 +42,7 @@
     </div>
     <div id="status"></div>
 
-    <script src="../../ace/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script
-            src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"
-            integrity="sha512-qtX0GLM3qX8rxJN1gyDfcnMFFrKvixfoEOwbBib9VafR5vbChV5LeE5wSI/x+IlCkTY5ZFddFDCCfaVJJNnuKQ=="
-            crossorigin="anonymous"
-            referrerpolicy="no-referrer"
-    ></script>
-    <script src="script.js" type="text/javascript" charset="utf-8"></script>
-    <script src="viz.js" type="text/javascript" charset="utf-8"></script>
-    <script src="svg-pan-zoom.min.js" type="text/javascript" charset="utf-8"></script>
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            // Get references to DOM elements
-            const editor = document.getElementById("editor");
-            const toggleButton = document.getElementById("toggleEditorButton");
-            const viewCanvas = document.getElementById("viewCanvas");
-            const domainInput = document.getElementById("domain");
-            const truthVectorInput = document.getElementById("truthVector");
-            const separatorInput = document.getElementById("separator");
-            const renderButton = document.getElementById("renderButton");
 
-            const stylingCheckbox = document.getElementById("stylingCheckbox");
-            const colorCheckbox = document.getElementById("colorCheckbox");
-
-            const fontSelector = document.getElementById("Font");
-            const customFontInput = document.getElementById("customFontInput");
-            const customFontField = document.getElementById("customFont");
-
-            const labelsCheckbox = document.getElementById("labelsCheckbox");
-
-            const formatSelector = document.getElementById("format");
-
-            let selectedFont = "Times-Roman";
-            let graph;
-
-            // Take input from custom font field
-            customFontField.addEventListener("input", () => {
-                if (fontSelector.value === "myFont") {
-                    selectedFont = customFontField.value || "Times-Roman"; // Default to "Times-Roman" if empty
-                }
-            });
-
-
-            // Function to render the graph on the canvas
-            function renderGraph() {
-                // Parse inputs
-                const domain = domainInput.value.split(separatorInput.value).map(Number);
-                const truthVector = truthVectorInput.value.split(separatorInput.value).map(Number);
-
-                // Validate inputs
-                if (!domain.every(Number.isFinite) || !truthVector.every(Number.isFinite)) {
-                    alert("Please enter only valid numbers with valid separators for both inputs.");
-                    return;
-                }
-
-                try {
-                    const truthTable = new TruthTable(domain, truthVector);
-                    const mdd = truthTable.fromVector();
-
-                    // Generate the graph
-                    graph = new Graph();
-
-                    graph.traverseMDD(mdd.getRoot());
-
-                    // Apply settings for styling
-                    graph.setEdgeStyling(stylingCheckbox.checked);
-                    graph.setEdgeColoring(colorCheckbox.checked);
-                    graph.setLabelsEnabled(labelsCheckbox.checked);
-                    graph.setLabelsEnabled(labelsCheckbox.checked);
-                    graph.setFont(selectedFont);
-
-                    // Apply dynamic edge styles and colors
-                    const maxEdges = Math.max(...domain);
-                    for (let i = 0; i < maxEdges; i++) {
-                        const styleSelector = document.getElementById(`dynamicEdgeStyle${i}`);
-                        const colorSelector = document.getElementById(`dynamicEdgeColor${i}`);
-
-                        if (styleSelector) {
-                            graph.setEdgeStyle(i, styleSelector.value);
-                        }
-                        if (colorSelector) {
-                            graph.setEdgeColor(i, colorSelector.value);
-                        }
-                    }
-
-                    const dotString = graph.toDOTString();
-
-                    // Display the DOT string using Ace Editor (force the dot string to the editor to make implementation easier)
-                    if (typeof ace !== "undefined") {
-                        const aceEditor = ace.edit("editor");
-                        aceEditor.setTheme("ace/theme/twilight");
-                        aceEditor.session.setMode("ace/mode/dot");
-                        aceEditor.getSession().setValue(dotString);
-                    }
-                } catch (error) {
-                    console.error("Error generating graph:", error);
-                    alert("An error occurred while processing the inputs. Please check the console for details.");
-                }
-            }
-
-
-            // Updates the dynamic menus for edge styles and colors based on the maximum domain size.
-            // This function ensures that the number of menus corresponds to the highest domain size specified.
-            function updateDynamicMenus() {
-                const domain = domainInput.value.split(separatorInput.value).map(Number);
-                const maxEdges = Math.max(...domain);
-
-                dynamicEdgeStyleMenu.innerHTML = "<h4>Edge Styles</h4>";
-                dynamicEdgeColorMenu.innerHTML = "<h4>Edge Colors</h4>";
-
-                for (let i = 0; i < maxEdges; i++) {
-                    const edgeStyleControl = document.createElement("div");
-                    edgeStyleControl.className = "form-control";
-                    edgeStyleControl.innerHTML = `
-                <label for="dynamicEdgeStyle${i}">Edge Style ${i}:</label>
-                <select id="dynamicEdgeStyle${i}">
-                    <option value="solid">Solid</option>
-                    <option value="dashed">Dashed</option>
-                    <option value="dotted">Dotted</option>
-                    <option value="bold">Bold</option>
-                    <option value="invis">Invisible</option>
-                </select>
-            `;
-                    dynamicEdgeStyleMenu.appendChild(edgeStyleControl);
-
-                    const edgeColorControl = document.createElement("div");
-                    edgeColorControl.className = "form-control";
-                    edgeColorControl.innerHTML = `
-                <label for="dynamicEdgeColor${i}">Edge Color ${i}:</label>
-                <select id="dynamicEdgeColor${i}">
-                    <option value="black">Black</option>
-                    <option value="red">Red</option>
-                    <option value="blue">Blue</option>
-                    <option value="green">Green</option>
-                    <option value="orange">Orange</option>
-                    <option value="purple">Purple</option>
-                    <option value="yellow">Yellow</option>
-                    <option value="cyan">Cyan</option>
-                    <option value="magenta">Magenta</option>
-                    <option value="brown">Brown</option>
-                    <option value="gray">Gray</option>
-                    <option value="pink">Pink</option>
-                    <option value="lime">Lime</option>
-                    <option value="navy">Navy</option>
-                    <option value="teal">Teal</option>
-                </select>
-            `;
-                    dynamicEdgeColorMenu.appendChild(edgeColorControl);
-                }
-            }
-
-            // Toggle menus based on checkboxes
-            function toggleDynamicMenus() {
-                if (stylingCheckbox.checked) {
-                    dynamicEdgeStyleMenu.style.display = "block";
-                } else {
-                    dynamicEdgeStyleMenu.style.display = "none";
-                }
-
-                if (colorCheckbox.checked) {
-                    dynamicEdgeColorMenu.style.display = "block";
-                } else {
-                    dynamicEdgeColorMenu.style.display = "none";
-                }
-            }
-
-            // --Event handlers--
-            // Update menus dynamically whenever domain or separator changes
-            domainInput.addEventListener("input", updateDynamicMenus);
-            separatorInput.addEventListener("change", updateDynamicMenus);
-
-            // Toggle menus visibility based on checkboxes
-            stylingCheckbox.addEventListener("change", toggleDynamicMenus);
-            colorCheckbox.addEventListener("change", toggleDynamicMenus);
-
-            // Toggle the custom font input based on the font selector
-            fontSelector.addEventListener("change", () => {
-                if (fontSelector.value === "myFont") {
-                    customFontInput.style.display = "flex";
-                } else {
-                    customFontInput.style.display = "none";
-                    selectedFont = fontSelector.value;
-                }
-            });
-
-            // Initial setup of the dynamic menus (if by default the checkboxes are checked, the menus should be visible, vice versa)
-            toggleDynamicMenus();
-
-            // Graph rendering stuff
-            renderButton.addEventListener("click", renderGraph);
-            toggleButton.addEventListener("click", function () {
-                if (editor.style.display === "none") {
-                    // Show the editor
-                    editor.style.display = "block";
-                    editor.style.left = "0"; // Reset editor's position
-                    viewCanvas.style.left = "50%"; // Reset viewCanvas position
-                } else {
-                    // Hide the editor
-                    editor.style.display = "none";
-                    viewCanvas.style.left = "0"; // Extend viewCanvas to fill the left side
-                }
-
-                // Re-render the graph when toggling the editor. This centers the graph to the middle of the viewCanvas.
-                renderGraph();
-            });
-
-            // Export button stuff
-            exportButton.addEventListener("click", exportGraph);
-            document.getElementById("pngExportButton").addEventListener("click", exportGraph);
-
-            // Export graph as an SVG or PNG image
-            async function exportGraph(event) {
-                try {
-                    // Get dot string from editor
-                    const aceEditor = ace.edit("editor");
-                    const dotString = aceEditor.getSession().getValue();
-
-                    if (!dotString.trim()) {
-                        alert("No graph to export. Please generate the graph first.");
-                        return;
-                    }
-
-                    // Convert DOT string to SVG or PNG using Viz.js
-                    const viz = new Viz({ workerURL: './full.render.js' });
-                    const format = event.target.id === "pngExportButton" ? "png" : formatSelector.value;
-
-                    if (format === "svg") {
-                        const svgElement = await viz.renderSVGElement(dotString);
-                        const serializer = new XMLSerializer();
-                        const svgString = serializer.serializeToString(svgElement);
-
-                        // Create a downloadable link for the SVG
-                        const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-                        const url = URL.createObjectURL(blob);
-                        const link = document.createElement("a");
-                        link.href = url;
-                        link.download = "graph.svg";
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(url);
-                    } else if (format === "png") {
-                        // If format is png, create svg, serialize to canvas and download as png
-                        const svgElement = await viz.renderSVGElement(dotString);
-                        const canvas = document.createElement("canvas");
-                        const ctx = canvas.getContext("2d");
-                        const img = new Image();
-
-                        img.onload = function () {
-                            // Set canvas size to the image size multiplied by the scale factor
-                            const scaleFactor = 10; // This value can be adjusted to increase the resolution
-                            canvas.width = img.width * scaleFactor;
-                            canvas.height = img.height * scaleFactor;
-
-                            // Scale the context to increase the resolution
-                            ctx.scale(scaleFactor, scaleFactor);
-
-                            // Draw the image onto the canvas
-                            ctx.drawImage(img, 0, 0);
-
-                            // Create a Blob from the canvas and trigger the download
-                            canvas.toBlob((blob) => {
-                                const link = document.createElement("a");
-                                link.href = URL.createObjectURL(blob);
-                                link.download = "graph.png";
-                                link.click();
-                            }, "image/png");
-                        };
-
-                        // Set the source of the image to the SVG data URL
-                        img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgElement.outerHTML)));
-                    } else {
-                        alert("Unsupported export format selected.");
-                    }
-                } catch (error) {
-                    console.error("Error during export:", error);
-                    alert("An error occurred while exporting the graph. Check the console for details.");
-                }
-            }
-        });
-    </script>
 </div>
 <div class="control-panel">
 
@@ -333,10 +53,27 @@
             <label for="domain"> Domain:</label>
             <input type="text" id="domain" placeholder="2, 2, 3">
         </div>
+        <span id="domainError" class="error-message" style="color: black; display: none; margin-top: -15px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
+  <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"/>
+  <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+</svg>
+            Please enter numbers separated by chosen separators only.</span>
         <div class="form-control">
             <label for="truthVector"> Truth Vector:</label>
             <input type="text" id="truthVector" placeholder="0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2">
         </div>
+        <span id="truthVectorError" class="error-message" style="color: black; display: none; margin-top: -15px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
+  <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"/>
+  <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+</svg>
+            Please enter numbers separated by chosen separators only.</span>
+        <span id="truthVectorInvalidQuantity" class="error-message" style="color: black; display: none; margin-top: -15px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-exclamation-triangle" viewBox="0 0 16 16">
+  <path d="M7.938 2.016A.13.13 0 0 1 8.002 2a.13.13 0 0 1 .063.016.15.15 0 0 1 .054.057l6.857 11.667c.036.06.035.124.002.183a.2.2 0 0 1-.054.06.1.1 0 0 1-.066.017H1.146a.1.1 0 0 1-.066-.017.2.2 0 0 1-.054-.06.18.18 0 0 1 .002-.183L7.884 2.073a.15.15 0 0 1 .054-.057m1.044-.45a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767z"/>
+  <path d="M7.002 12a1 1 0 1 1 2 0 1 1 0 0 1-2 0M7.1 5.995a.905.905 0 1 1 1.8 0l-.35 3.507a.552.552 0 0 1-1.1 0z"/>
+</svg> Please enter valid quantity of numbers.</span>
         <div class="form-control">
             <label for="separator">Separator:</label>
             <select id="separator">
@@ -410,3 +147,339 @@
 
 </body>
 </html>
+
+<script src="../../ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script
+        src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"
+        integrity="sha512-qtX0GLM3qX8rxJN1gyDfcnMFFrKvixfoEOwbBib9VafR5vbChV5LeE5wSI/x+IlCkTY5ZFddFDCCfaVJJNnuKQ=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+></script>
+<script src="script.js" type="text/javascript" charset="utf-8"></script>
+<script src="viz.js" type="text/javascript" charset="utf-8"></script>
+<script src="svg-pan-zoom.min.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get references to DOM elements
+        const editor = document.getElementById("editor");
+        const toggleButton = document.getElementById("toggleEditorButton");
+        const viewCanvas = document.getElementById("viewCanvas");
+        const domainInput = document.getElementById("domain");
+        const truthVectorInput = document.getElementById("truthVector");
+        const separatorInput = document.getElementById("separator");
+        const renderButton = document.getElementById("renderButton");
+
+        const stylingCheckbox = document.getElementById("stylingCheckbox");
+        const colorCheckbox = document.getElementById("colorCheckbox");
+
+        const fontSelector = document.getElementById("Font");
+        const customFontInput = document.getElementById("customFontInput");
+        const customFontField = document.getElementById("customFont");
+
+        const labelsCheckbox = document.getElementById("labelsCheckbox");
+
+        const formatSelector = document.getElementById("format");
+
+        let selectedFont = "Times-Roman";
+        let graph;
+
+        // Take input from custom font field
+        customFontField.addEventListener("input", () => {
+            if (fontSelector.value === "myFont") {
+                selectedFont = customFontField.value || "Times-Roman"; // Default to "Times-Roman" if empty
+            }
+        });
+
+
+        // Function to render the graph on the canvas
+        function renderGraph() {
+            // Parse inputs and sanitize them
+            let domain;
+            if (domainInput.value) {
+                domain = domainInput.value.split(separatorInput.value).map(Number);
+            } else {
+                domain = [];
+            }
+            const domainFormControl = document.getElementById("domain").closest(".form-control");
+
+            let truthVector;
+            if (truthVectorInput.value) {
+                truthVector = truthVectorInput.value.split(separatorInput.value).map(Number);
+            } else {
+                truthVector = [];
+            }
+            const truthVectorFormControl = document.getElementById("truthVector").closest(".form-control");
+
+            let domainValid = domain.every(Number.isFinite) && domain.length > 0;
+            let truthVectorValid = truthVector.every(Number.isFinite) && truthVector.length > 0;
+
+            // Input validation
+            if (!domainValid) {
+                domainError.style.display = "block";
+                domainFormControl.style.border = "2px solid red";
+                return;
+            } else {
+                domainError.style.display = "none";
+                domainFormControl.style.border = "";
+            }
+
+            // Check truth vector validity
+            if (!truthVectorValid) {
+                truthVectorError.style.display = "block";
+                truthVectorFormControl.style.border = "2px solid red";
+                truthVectorInvalidQuantity.style.display = "none";
+                return;
+            } else {
+                truthVectorError.style.display = "none";
+            }
+
+            // Check whether TruthVector has correct length
+            const product = domain.reduce((acc, num) => acc * num, 1);
+            if (truthVector.length !== product) {
+                truthVectorInvalidQuantity.style.display = "block";
+                truthVectorFormControl.style.border = "2px solid red";
+                return;
+            } else {
+                truthVectorInvalidQuantity.style.display = "none";
+            }
+
+
+            // If both are valid
+            domainError.style.display = "none";
+            domainFormControl.style.border = "";
+            truthVectorError.style.display = "none";
+            truthVectorFormControl.style.border = "";
+            truthVectorInvalidQuantity.style.display = "none";
+
+            try {
+                const truthTable = new TruthTable(domain, truthVector);
+                const mdd = truthTable.fromVector();
+
+                // Generate the graph
+                graph = new Graph();
+
+                graph.traverseMDD(mdd.getRoot());
+
+                // Apply settings for styling
+                graph.setEdgeStyling(stylingCheckbox.checked);
+                graph.setEdgeColoring(colorCheckbox.checked);
+                graph.setLabelsEnabled(labelsCheckbox.checked);
+                graph.setLabelsEnabled(labelsCheckbox.checked);
+                graph.setFont(selectedFont);
+
+                // Apply dynamic edge styles and colors
+                const maxEdges = Math.max(...domain);
+                for (let i = 0; i < maxEdges; i++) {
+                    const styleSelector = document.getElementById(`dynamicEdgeStyle${i}`);
+                    const colorSelector = document.getElementById(`dynamicEdgeColor${i}`);
+
+                    if (styleSelector) {
+                        graph.setEdgeStyle(i, styleSelector.value);
+                    }
+                    if (colorSelector) {
+                        graph.setEdgeColor(i, colorSelector.value);
+                    }
+                }
+
+                const dotString = graph.toDOTString();
+
+                // Display the DOT string using Ace Editor (force the dot string to the editor to make implementation easier)
+                if (typeof ace !== "undefined") {
+                    const aceEditor = ace.edit("editor");
+                    aceEditor.setTheme("ace/theme/twilight");
+                    aceEditor.session.setMode("ace/mode/dot");
+                    aceEditor.getSession().setValue(dotString);
+                }
+            } catch (error) {
+                console.error("Error generating graph:", error);
+                alert("An error occurred while processing the inputs. Please check the console for details.");
+            }
+        }
+
+
+        // Updates the dynamic menus for edge styles and colors based on the maximum domain size.
+        // This function ensures that the number of menus corresponds to the highest domain size specified.
+        function updateDynamicMenus() {
+            const domain = domainInput.value.split(separatorInput.value).map(Number);
+            const maxEdges = Math.max(...domain);
+
+            dynamicEdgeStyleMenu.innerHTML = "<h4>Edge Styles</h4>";
+            dynamicEdgeColorMenu.innerHTML = "<h4>Edge Colors</h4>";
+
+            const defaultStyles = ["dashed", "solid", "dotted"];
+
+            for (let i = 0; i < maxEdges; i++) {
+                const edgeStyleControl = document.createElement("div");
+                edgeStyleControl.className = "form-control";
+                edgeStyleControl.innerHTML = `
+                <label for="dynamicEdgeStyle${i}">Edge Style ${i}:</label>
+                <select id="dynamicEdgeStyle${i}">
+                    <option value="solid">Solid</option>
+                    <option value="dashed">Dashed</option>
+                    <option value="dotted">Dotted</option>
+                    <option value="bold">Bold</option>
+                    <option value="invis">Invisible</option>
+                </select>
+                `;
+                dynamicEdgeStyleMenu.appendChild(edgeStyleControl);
+
+                // Set default style based on index
+                const styleSelector = edgeStyleControl.querySelector(`#dynamicEdgeStyle${i}`);
+                styleSelector.value = defaultStyles[i % defaultStyles.length];
+
+                const edgeColorControl = document.createElement("div");
+                edgeColorControl.className = "form-control";
+                edgeColorControl.innerHTML = `
+                <label for="dynamicEdgeColor${i}">Edge Color ${i}:</label>
+                <select id="dynamicEdgeColor${i}">
+                    <option value="black">Black</option>
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="orange">Orange</option>
+                    <option value="purple">Purple</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="cyan">Cyan</option>
+                    <option value="magenta">Magenta</option>
+                    <option value="brown">Brown</option>
+                    <option value="gray">Gray</option>
+                    <option value="pink">Pink</option>
+                    <option value="lime">Lime</option>
+                    <option value="navy">Navy</option>
+                    <option value="teal">Teal</option>
+                </select>
+            `;
+                dynamicEdgeColorMenu.appendChild(edgeColorControl);
+            }
+        }
+
+        // Toggle menus based on checkboxes
+        function toggleDynamicMenus() {
+            if (stylingCheckbox.checked) {
+                dynamicEdgeStyleMenu.style.display = "block";
+            } else {
+                dynamicEdgeStyleMenu.style.display = "none";
+            }
+
+            if (colorCheckbox.checked) {
+                dynamicEdgeColorMenu.style.display = "block";
+            } else {
+                dynamicEdgeColorMenu.style.display = "none";
+            }
+        }
+
+        // --Event handlers--
+        // Update menus dynamically whenever domain or separator changes
+        domainInput.addEventListener("input", updateDynamicMenus);
+        separatorInput.addEventListener("change", updateDynamicMenus);
+
+        // Toggle menus visibility based on checkboxes
+        stylingCheckbox.addEventListener("change", toggleDynamicMenus);
+        colorCheckbox.addEventListener("change", toggleDynamicMenus);
+
+        // Toggle the custom font input based on the font selector
+        fontSelector.addEventListener("change", () => {
+            if (fontSelector.value === "myFont") {
+                customFontInput.style.display = "flex";
+            } else {
+                customFontInput.style.display = "none";
+                selectedFont = fontSelector.value;
+            }
+        });
+
+        // Initial setup of the dynamic menus (if by default the checkboxes are checked, the menus should be visible, vice versa)
+        toggleDynamicMenus();
+
+        // Graph rendering stuff
+        renderButton.addEventListener("click", renderGraph);
+        toggleButton.addEventListener("click", function () {
+            if (editor.style.display === "none") {
+                // Show the editor
+                editor.style.display = "block";
+                editor.style.left = "0"; // Reset editor's position
+                viewCanvas.style.left = "50%"; // Reset viewCanvas position
+            } else {
+                // Hide the editor
+                editor.style.display = "none";
+                viewCanvas.style.left = "0"; // Extend viewCanvas to fill the left side
+            }
+
+            // Re-render the graph when toggling the editor. This centers the graph to the middle of the viewCanvas.
+            renderGraph();
+        });
+
+        // Export button stuff
+        exportButton.addEventListener("click", exportGraph);
+        document.getElementById("pngExportButton").addEventListener("click", exportGraph);
+
+        // Export graph as an SVG or PNG image
+        async function exportGraph(event) {
+            try {
+                // Get dot string from editor
+                const aceEditor = ace.edit("editor");
+                const dotString = aceEditor.getSession().getValue();
+
+                if (!dotString.trim()) {
+                    alert("No graph to export. Please generate the graph first.");
+                    return;
+                }
+
+                // Convert DOT string to SVG or PNG using Viz.js
+                const viz = new Viz({ workerURL: './full.render.js' });
+                const format = event.target.id === "pngExportButton" ? "png" : formatSelector.value;
+
+                if (format === "svg") {
+                    const svgElement = await viz.renderSVGElement(dotString);
+                    const serializer = new XMLSerializer();
+                    const svgString = serializer.serializeToString(svgElement);
+
+                    // Create a downloadable link for the SVG
+                    const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.download = "graph.svg";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                } else if (format === "png") {
+                    // If format is png, create svg, serialize to canvas and download as png
+                    const svgElement = await viz.renderSVGElement(dotString);
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    const img = new Image();
+
+                    img.onload = function () {
+                        // Set canvas size to the image size multiplied by the scale factor
+                        const scaleFactor = 10; // This value can be adjusted to increase the resolution
+                        canvas.width = img.width * scaleFactor;
+                        canvas.height = img.height * scaleFactor;
+
+                        // Scale the context to increase the resolution
+                        ctx.scale(scaleFactor, scaleFactor);
+
+                        // Draw the image onto the canvas
+                        ctx.drawImage(img, 0, 0);
+
+                        // Create a Blob from the canvas and trigger the download
+                        canvas.toBlob((blob) => {
+                            const link = document.createElement("a");
+                            link.href = URL.createObjectURL(blob);
+                            link.download = "graph.png";
+                            link.click();
+                        }, "image/png");
+                    };
+
+                    // Set the source of the image to the SVG data URL
+                    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgElement.outerHTML)));
+                } else {
+                    alert("Unsupported export format selected.");
+                }
+            } catch (error) {
+                console.error("Error during export:", error);
+                alert("An error occurred while exporting the graph. Check the console for details.");
+            }
+        }
+    });
+</script>
