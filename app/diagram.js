@@ -14,7 +14,10 @@ class InternalNode {
         this._successors = successors;
     }
 
-    // Getter for the InternalNode index
+    /**
+     * Gets the index of the node.
+     * @returns {number} The index of the InternalNode.
+     */
     getIndex() {
         return this._index;
     }
@@ -27,15 +30,18 @@ class InternalNode {
         this._successors.push(successor);
     }
 
-    // Getter for the array of successors
+    /**
+     * Gets the array of successors.
+     * @returns {Array} Array of successor nodes.
+     */
     getSuccessors() {
         return this._successors;
     }
 
     /**
-     * @param index index of the successor in the _successors array of this InternalNode.
-     * @returns {*|null} returns the InternalNode from the _successors array based on its index.
-     *                   If index is nonsense or out of bounds, returns null.
+     * Gets a specific successor by index.
+     * @param {number} index - Index of the successor to retrieve.
+     * @returns {InternalNode|TerminalNode|null} The successor node or null if out of bounds.
      */
     getSuccessor(index) {
         if (index >= 0 && index < this._successors.length) {
@@ -45,21 +51,11 @@ class InternalNode {
     }
 
     /**
-     * @returns number of successors in the _successors array of this InternalNode.
+     * Gets the number of successors.
+     * @returns {number} The number of successor nodes.
      */
     getSuccessorsCount() {
         return this._successors.length;
-    }
-
-    // Remove a successor from the array
-    removeSuccessor(successor) {
-        // This code finds the index of successor in the array.
-        // If successor is not found in array, it returns -1.
-        const index = this._successors.indexOf(successor);
-        // If successor exists (index is other than -1), it is removed.
-        if (index !== -1) {
-            this._successors.splice(index, 1);
-        }
     }
 
     /**
@@ -67,6 +63,7 @@ class InternalNode {
      * @param {InternalNode} other - The other InternalNode to compare with.
      * @returns {boolean} - True if the indices and successors of the InternalNodes are equal, else false.
      */
+    /*
     equals(other) {
         if (!(other instanceof InternalNode) &&  // Check if other is an instance of InternalNode
             this.index !== other.index &&  // Check if the indices of this InternalNode and the other InternalNode are equal
@@ -81,7 +78,7 @@ class InternalNode {
             }
         }
         return true;  // If all checks passed, return true
-    }
+    }*/
 
     /**
      * Returns a string representation of the InternalNode, including its index and indices of its successors.
@@ -108,15 +105,18 @@ class InternalNode {
 class TerminalNode {
     /**
      * Constructs a TerminalNode with the given value.
-     * @param {*} value - The value that TerminalNode will represent.
+     * @param {number} value - The value that TerminalNode will represent.
      */
     constructor(value) {
-        this.value = value;
+        this._value = value;
     }
 
-    // Getter for the value property
+    /**
+     * Gets the result value of the node.
+     * @returns {number} The result value.
+     */
     getResultValue() {
-        return this.value;
+        return this._value;
     }
 
     /**
@@ -131,7 +131,7 @@ class TerminalNode {
         }
 
         // Compare the values of this TerminalNode and the other TerminalNode
-        return this.value === other.value;
+        return this._value === other._value;
     }
 
     /**
@@ -139,7 +139,7 @@ class TerminalNode {
      * @returns {string} A string representation of the TerminalNode.
      */
     toString() {
-        return this.value;
+        return this._value;
     }
 }
 
@@ -159,6 +159,10 @@ class MDD {
         this._rootNode = rootNode;
     }
 
+    /**
+     * Gets the root node of the MDD.
+     * @returns {InternalNode|TerminalNode} The root node.
+     */
     getRoot() {
         return this._rootNode;
     }
