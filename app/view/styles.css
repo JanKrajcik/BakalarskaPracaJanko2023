@@ -224,6 +224,15 @@ body.presentation #viewCanvas {
     border-left: 1px solid #CCCCCC;
 }
 
+.github-link img {
+    transition: box-shadow 0.3s ease;
+    border-radius: 50%;
+}
+
+.github-link img:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
 #edgeStyleMenu {
     margin-top: 10px;
     padding-left: 15px;
