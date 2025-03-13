@@ -1,4 +1,4 @@
-const {TerminalNode} = require('../app/diagram'); // Imports the TruthTable class from table.js.
+const {TerminalNode, InternalNode} = require('../app/diagram'); // Imports the TruthTable class from table.js.
 const {TruthTable} = require('../app/table'); // Imports the TruthTable class from table.js.
 
 describe('TruthTable - Table generating and printing', () => {
@@ -111,6 +111,54 @@ describe('TruthTable - Table evaluation', () => {
         expect(tableOfTruth.evaluate([1, 1, 0])).toBe(0);
         expect(tableOfTruth.evaluate([1, 1, 1])).toBe(2);
         expect(tableOfTruth.evaluate([1, 1, 2])).toBe(2);
+    });
+
+    it('should evaluate each row of the table correctly, and check if path when variable count mismatch', () => {
+        const tableOfTruth = new TruthTable([2, 2, 3], [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2]);
+
+        // Testing regular evaluation path
+        expect(tableOfTruth.evaluate([0, 0, 0])).toBe(0);
+        expect(tableOfTruth.evaluate([0, 0, 1])).toBe(0);
+        expect(tableOfTruth.evaluate([0, 0, 2])).toBe(0);
+        expect(tableOfTruth.evaluate([0, 1, 0])).toBe(0);
+        expect(tableOfTruth.evaluate([0, 1, 1])).toBe(1);
+        expect(tableOfTruth.evaluate([0, 1, 2])).toBe(1);
+        expect(tableOfTruth.evaluate([1, 0, 0])).toBe(0);
+        expect(tableOfTruth.evaluate([1, 0, 1])).toBe(1);
+        expect(tableOfTruth.evaluate([1, 0, 2])).toBe(1);
+        expect(tableOfTruth.evaluate([1, 1, 0])).toBe(0);
+        expect(tableOfTruth.evaluate([1, 1, 1])).toBe(2);
+        expect(tableOfTruth.evaluate([1, 1, 2])).toBe(2);
+
+        // --Test the if path by providing incorrect number of variables--
+        const consoleSpy = jest.spyOn(console, 'error').mockImplementation(); // Spy on console.error
+
+        tableOfTruth.evaluate([0, 0]); // 2 values provided, but 3 are expected
+        expect(consoleSpy).toHaveBeenCalledWith(
+            'Evaluation cannot be performed. The number of provided variable values (2) does not match the expected number of variables (3).'
+        );
+
+        consoleSpy.mockClear();
+
+        tableOfTruth.evaluate([0, 0, 0, 0]); // 4 values provided, but 3 are expected
+        expect(consoleSpy).toHaveBeenCalledWith(
+            'Evaluation cannot be performed. The number of provided variable values (4) does not match the expected number of variables (3).'
+        );
+
+        consoleSpy.mockClear();
+
+        tableOfTruth.evaluate(); // 0 values provided, but 3 are expected
+        expect(consoleSpy).toHaveBeenCalledWith(
+            'Evaluation cannot be performed. The number of provided variable values (0) does not match the expected number of variables (3).'
+        );
+
+        consoleSpy.mockClear();
+
+        // Provide correct number of variables again and check if no error is logged
+        expect(tableOfTruth.evaluate([0, 1, 2])).toBe(1);
+        expect(consoleSpy).not.toHaveBeenCalled();
+
+        consoleSpy.mockRestore();
     });
 });
 
@@ -251,6 +299,17 @@ describe('TruthTable - fromVector method', () => {
         expect(consoleLogSpy).toHaveBeenNthCalledWith(1, 'TN0');
 
         consoleLogSpy.mockRestore();
+    });
+
+    it('should return the correct root node of the MDD created from TruthTable', () => {
+        // Create a TruthTable and generate MDD from it
+        const tableOfTruth = new TruthTable([2, 2, 3], [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2]);
+        const mddFromVector = tableOfTruth.fromVector();
+
+        // Test the getRoot method
+        const rootNode = mddFromVector.getRoot();
+        expect(rootNode).toBeInstanceOf(InternalNode);
+        expect(rootNode.getIndex()).toBe(0);
     });
 });
 
