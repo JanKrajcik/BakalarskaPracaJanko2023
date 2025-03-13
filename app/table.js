@@ -25,24 +25,6 @@ class TruthTable {
     }
 
     /**
-     * Returns the domain value at a specific index in the TruthTable instance.
-     * @param {number} index - The index of the variable domain to retrieve.
-     * @returns {number|null} - The domain value if the index is valid, or null if the index is out of bounds.
-     */
-    getDomain(index) {
-        if (index < 0 || index > this._domains.length - 1) {
-            console.error(`There is no variable with index ${index}.Variables are from 0 to ${this._domains.length - 1}`);
-            return null;
-        }
-        return this._domains[index];
-    }
-
-    //TODO Ask, what is the purpose of this method and how it should be implemented.
-    getValue(index) {
-
-    }
-
-    /**
      * Creates the staging table used for generating the truth table.
      * @returns {void}
      */
@@ -67,9 +49,6 @@ class TruthTable {
             for (let j = 1; j < tableLength; j++) {
                 truthTable[j][i] = (Math.floor(j / this._offsets[i])) % this._domains[i];
             }
-            //TODO
-            // Lambda which will test, whether MDD and Table gives same result for same values will be executed here. Extract this method to a Utils class.
-
         }
         return truthTable;
     }

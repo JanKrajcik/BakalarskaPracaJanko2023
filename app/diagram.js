@@ -59,28 +59,6 @@ class InternalNode {
     }
 
     /**
-     * Method to check if this InternalNode is equal to another InternalNode.
-     * @param {InternalNode} other - The other InternalNode to compare with.
-     * @returns {boolean} - True if the indices and successors of the InternalNodes are equal, else false.
-     */
-    /*
-    equals(other) {
-        if (!(other instanceof InternalNode) &&  // Check if other is an instance of InternalNode
-            this.index !== other.index &&  // Check if the indices of this InternalNode and the other InternalNode are equal
-            this.getSuccessors().length !== other.getSuccessors().length) { // Check if other and this have same amount of successors.
-            return false;
-        }
-        // Check if the successors of this InternalNode and the other InternalNode are equal
-        // Successors are considered equal if they are the same instances in the same order
-        for (let i = 0; i < this.getSuccessors().length; i++) {
-            if (!this.getSuccessors()[i].equals(other.getSuccessors()[i])) {
-                return false;
-            }
-        }
-        return true;  // If all checks passed, return true
-    }*/
-
-    /**
      * Returns a string representation of the InternalNode, including its index and indices of its successors.
      * InternalNode indices are prefixed with 'N', and TerminalNode indices are prefixed with 'TN'.
      * @returns {string} A string representation of the InternalNode.
@@ -91,8 +69,6 @@ class InternalNode {
                 return `N${successor.getIndex()}`;
             } else if (successor instanceof TerminalNode) {
                 return `TN${successor.getResultValue()}`;
-            } else {
-                return 'UNKNOWN';
             }
         }).join(',');
         return `N${this._index}:${successorIndices}`;
@@ -120,21 +96,6 @@ class TerminalNode {
     }
 
     /**
-     * Method to check if this TerminalNode is equal to another TerminalNode.
-     * @param {TerminalNode} other - The other TerminalNode to compare with.
-     * @returns {boolean} - True if the values of the TerminalNodes are equal, else false.
-     */
-    equals(other) {
-        // Check if other is an instance of TerminalNode
-        if (!(other instanceof TerminalNode)) {
-            return false;
-        }
-
-        // Compare the values of this TerminalNode and the other TerminalNode
-        return this._value === other._value;
-    }
-
-    /**
      * Returns a string representation of the TerminalNode, which is its result value.
      * @returns {string} A string representation of the TerminalNode.
      */
@@ -153,9 +114,6 @@ class MDD {
      * @param {InternalNode|TerminalNode} rootNode - The root node of the MDD.
      */
     constructor(rootNode) {
-        if (!rootNode instanceof InternalNode && !rootNode instanceof TerminalNode) {
-            return null;
-        }
         this._rootNode = rootNode;
     }
 
@@ -247,8 +205,6 @@ class MDD {
             }
         } else if (node instanceof TerminalNode) {
             console.log(`${indentation}TN${node.getResultValue()}`);
-        } else {
-            console.error('ERROR: Not an InternalNode or TerminalNode.'); // Print an error message if the node type is invalid
         }
     }
 }
