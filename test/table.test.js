@@ -1,4 +1,4 @@
-const {TerminalNode, InternalNode} = require('../app/diagram'); // Imports the TruthTable class from table.js.
+const {TerminalNode} = require('../app/diagram'); // Imports the TruthTable class from table.js.
 const {TruthTable} = require('../app/table'); // Imports the TruthTable class from table.js.
 
 describe('TruthTable - Table generating and printing', () => {
@@ -251,6 +251,49 @@ describe('TruthTable - fromVector method', () => {
         expect(consoleLogSpy).toHaveBeenNthCalledWith(1, 'TN0');
 
         consoleLogSpy.mockRestore();
+    });
+});
+
+describe('TruthTable and MDD evaluation comparison', () => {
+    it('should return the same result for both TruthTable and MDD', () => {
+        const tableOfTruth = new TruthTable([2, 2, 3], [0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2]);
+        const mdd = tableOfTruth.fromVector();
+
+        expect(tableOfTruth.evaluate([0, 0, 0])).toBe(0);
+        expect(mdd.evaluate([0, 0, 0]).getResultValue()).toBe(0);
+
+        expect(tableOfTruth.evaluate([0, 0, 1])).toBe(0);
+        expect(mdd.evaluate([0, 0, 1]).getResultValue()).toBe(0);
+
+        expect(tableOfTruth.evaluate([0, 0, 2])).toBe(0);
+        expect(mdd.evaluate([0, 0, 2]).getResultValue()).toBe(0);
+
+        expect(tableOfTruth.evaluate([0, 1, 0])).toBe(0);
+        expect(mdd.evaluate([0, 1, 0]).getResultValue()).toBe(0);
+
+        expect(tableOfTruth.evaluate([0, 1, 1])).toBe(1);
+        expect(mdd.evaluate([0, 1, 1]).getResultValue()).toBe(1);
+
+        expect(tableOfTruth.evaluate([0, 1, 2])).toBe(1);
+        expect(mdd.evaluate([0, 1, 2]).getResultValue()).toBe(1);
+
+        expect(tableOfTruth.evaluate([1, 0, 0])).toBe(0);
+        expect(mdd.evaluate([1, 0, 0]).getResultValue()).toBe(0);
+
+        expect(tableOfTruth.evaluate([1, 0, 1])).toBe(1);
+        expect(mdd.evaluate([1, 0, 1]).getResultValue()).toBe(1);
+
+        expect(tableOfTruth.evaluate([1, 0, 2])).toBe(1);
+        expect(mdd.evaluate([1, 0, 2]).getResultValue()).toBe(1);
+
+        expect(tableOfTruth.evaluate([1, 1, 0])).toBe(0);
+        expect(mdd.evaluate([1, 1, 0]).getResultValue()).toBe(0);
+
+        expect(tableOfTruth.evaluate([1, 1, 1])).toBe(2);
+        expect(mdd.evaluate([1, 1, 1]).getResultValue()).toBe(2);
+
+        expect(tableOfTruth.evaluate([1, 1, 2])).toBe(2);
+        expect(mdd.evaluate([1, 1, 2]).getResultValue()).toBe(2);
     });
 });
 
