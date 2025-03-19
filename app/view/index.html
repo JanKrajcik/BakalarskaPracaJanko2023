@@ -216,10 +216,11 @@
             }
             const truthVectorFormControl = document.getElementById("truthVector").closest(".form-control");
 
-            let domainValid = domain.every(Number.isFinite) && domain.length > 0;
-            let truthVectorValid = truthVector.every(Number.isFinite) && truthVector.length > 0;
+            // Check that the inputs are only positive whole numbers. Input for domain must be a number greater than 0.
+            let domainValid = domain.every(num => Number.isInteger(num) && num >= 1) && domain.length > 0;
+            let truthVectorValid = truthVector.every(num => Number.isInteger(num) && num >= 0) && truthVector.length > 0;
 
-            // Input validation
+            // Domain validation
             if (!domainValid) {
                 domainError.style.display = "block";
                 domainFormControl.style.border = "2px solid red";
@@ -229,7 +230,7 @@
                 domainFormControl.style.border = "";
             }
 
-            // Check truth vector validity
+            // TruthVector validation
             if (!truthVectorValid) {
                 truthVectorError.style.display = "block";
                 truthVectorFormControl.style.border = "2px solid red";
@@ -239,7 +240,7 @@
                 truthVectorError.style.display = "none";
             }
 
-            // Check whether TruthVector has correct length
+            // TruthVector length validation
             const product = domain.reduce((acc, num) => acc * num, 1);
             if (truthVector.length !== product) {
                 truthVectorInvalidQuantity.style.display = "block";
@@ -250,7 +251,7 @@
             }
 
 
-            // If both are valid
+            // If both are valid, display no errors
             domainError.style.display = "none";
             domainFormControl.style.border = "";
             truthVectorError.style.display = "none";
