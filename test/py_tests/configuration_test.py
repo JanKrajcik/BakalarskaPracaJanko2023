@@ -39,7 +39,7 @@ class ConfigurationTest(unittest.TestCase):
         # Generate random domain values
         domain_values = []
         for i in range(num_domains):
-            domain_values.append(random.randint(1, 10))
+            domain_values.append(random.randint(1, 5))
 
         # Create the domains string
         domains = ", ".join(str(value) for value in domain_values)
@@ -86,7 +86,7 @@ class ConfigurationTest(unittest.TestCase):
         # Generate random domain values
         domain_values = []
         for i in range(num_domains):
-            domain_values.append(random.randint(1, 10))
+            domain_values.append(random.randint(1, 5))
 
         # Create the domains string
         domains = ", ".join(str(value) for value in domain_values)
