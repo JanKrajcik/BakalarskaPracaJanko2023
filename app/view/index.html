@@ -377,7 +377,7 @@
 
         // --Event handlers--
         // Update menus dynamically whenever domain or separator changes
-        domainInput.addEventListener("input", updateDynamicMenus);
+        domainInput.addEventListener("blur", updateDynamicMenus);
         separatorInput.addEventListener("change", updateDynamicMenus);
 
         // Toggle menus visibility based on checkboxes
@@ -403,7 +403,6 @@
             if (editor.style.display === "none") {
                 // Show the editor
                 editor.style.display = "block";
-                editor.style.left = "0"; // Reset editor's position
                 viewCanvas.style.left = "50%"; // Reset viewCanvas position
             } else {
                 // Hide the editor

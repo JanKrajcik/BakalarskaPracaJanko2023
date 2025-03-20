@@ -114,6 +114,7 @@ body.presentation #viewCanvas {
 #editor {
     margin: 0;
     position: absolute;
+    display: none;
     top: 0;
     bottom: 0;
     right: 55%;
