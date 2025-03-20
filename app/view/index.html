@@ -303,6 +303,12 @@
             }
         }
 
+        // Update the placeholders for domain and truth vector inputs based on the selected separator
+        function updatePlaceholders() {
+            const separator = separatorInput.value === "," ? ", " : " ";
+            document.getElementById("domain").placeholder = `2${separator}2${separator}3`;
+            document.getElementById("truthVector").placeholder = `0${separator}0${separator}0${separator}0${separator}1${separator}1${separator}0${separator}1${separator}1${separator}0${separator}2${separator}2`;
+        }
 
         // Updates the dynamic menus for edge styles and colors based on the maximum domain size.
         // This function ensures that the number of menus corresponds to the highest domain size specified.
@@ -378,7 +384,10 @@
         // --Event handlers--
         // Update menus dynamically whenever domain or separator changes
         domainInput.addEventListener("blur", updateDynamicMenus);
-        separatorInput.addEventListener("change", updateDynamicMenus);
+        separatorInput.addEventListener("change", () => {
+            updateDynamicMenus();
+            updatePlaceholders();
+        });
 
         // Toggle menus visibility based on checkboxes
         stylingCheckbox.addEventListener("change", toggleDynamicMenus);
