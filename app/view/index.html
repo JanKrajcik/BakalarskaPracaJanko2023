@@ -446,15 +446,17 @@
                 const aceEditor = ace.edit("editor");
                 const dotString = aceEditor.getSession().getValue();
                 const formatFormControl = document.getElementById("format").closest(".form-control");
+                const exportError = document.getElementById("exportError");
 
+                // If the editor is empty, show an error message and return
                 if (!dotString.trim()) {
                     exportError.style.display = "block";
                     formatFormControl.style.border = "2px solid red";
                     return;
+                } else {
+                    exportError.style.display = "none";
+                    formatFormControl.style.border = "";
                 }
-
-                exportError.style.display = "none";
-                formatFormControl.style.border = "";
 
                 // Convert DOT string to SVG or PNG using Viz.js
                 const viz = new Viz({ workerURL: './full.render.js' });
@@ -494,13 +496,24 @@
                         // Draw the image onto the canvas
                         ctx.drawImage(img, 0, 0);
 
-                        // Create a Blob from the canvas and trigger the download
-                        canvas.toBlob((blob) => {
-                            const link = document.createElement("a");
-                            link.href = URL.createObjectURL(blob);
-                            link.download = "graph.png";
-                            link.click();
-                        }, "image/png");
+                        try {
+                            // Create a Blob from the canvas and trigger the download
+                            canvas.toBlob((blob) => {
+                                try {
+                                    const link = document.createElement("a");
+                                    link.href = URL.createObjectURL(blob);
+                                    link.download = "graph.png";
+                                    link.click();
+                                } catch (linkError) {
+                                    console.error("Error creating PNG download link:", linkError);
+                                    alert("An error occurred while creating the PNG. Check the console for details.");
+                                }
+                            }, "image/png");
+                        } catch (svgError) {
+                            console.error("Error during export:", svgError);
+                            alert("An error occurred while exporting the graph. Check the console for details.");
+                        }
+
                     };
 
                     // Set the source of the image to the SVG data URL
