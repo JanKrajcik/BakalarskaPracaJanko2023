@@ -60,6 +60,17 @@ polygon {
     border: 2px solid red;
 }
 
+.error-message-input {
+      color: black;
+      display: none;
+      margin-top: -15px;
+  }
+
+.error-message-export {
+    color: black;
+    display: none;
+}
+
 .form-control input[type="text"] {
     width: 75%;
     min-width: 0;
