@@ -16,7 +16,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
             crossorigin="anonymous"></script>
-    <script src="./viz.js" type="text/javascript"></script>
     <script src="./full.render.js" type="text/javascript"></script>
     <script type="module" src="../graph.js"></script>
     <script type="module" src="../table.js"></script>
@@ -39,9 +38,9 @@
         <label>
             <input type="button" value="Share" id="share">
         </label>
-
-        <input type="input" value="" id="shareurl">
-
+        <label>
+            <input type="text" value="" id="shareurl">
+        </label>
     </div>
     <div id="viewCanvas">
         <div id="error"></div>
@@ -211,6 +210,10 @@
 
         // Function to render the graph on the canvas
         function renderGraph() {
+            const domainError = document.getElementById("domainError");
+            const truthVectorError = document.getElementById("truthVectorError");
+            const truthVectorInvalidQuantity = document.getElementById("truthVectorInvalidQuantity");
+
             // Parse inputs and sanitize them
             let domain;
             if (domainInput.value) {
@@ -327,6 +330,8 @@
         function updateDynamicMenus() {
             const domain = domainInput.value.split(separatorInput.value).map(Number);
             const maxEdges = Math.max(...domain);
+            const dynamicEdgeStyleMenu = document.getElementById("dynamicEdgeStyleMenu");
+            const dynamicEdgeColorMenu = document.getElementById("dynamicEdgeColorMenu");
 
             dynamicEdgeStyleMenu.innerHTML = "<h4>Edge Styles</h4>";
             dynamicEdgeColorMenu.innerHTML = "<h4>Edge Colors</h4>";
@@ -380,6 +385,9 @@
 
         // Toggle menus based on checkboxes
         function toggleDynamicMenus() {
+            const dynamicEdgeStyleMenu = document.getElementById("dynamicEdgeStyleMenu");
+            const dynamicEdgeColorMenu = document.getElementById("dynamicEdgeColorMenu");
+
             if (stylingCheckbox.checked) {
                 dynamicEdgeStyleMenu.style.display = "block";
             } else {
@@ -402,8 +410,14 @@
         });
 
         // Toggle menus visibility based on checkboxes
-        stylingCheckbox.addEventListener("change", toggleDynamicMenus);
-        colorCheckbox.addEventListener("change", toggleDynamicMenus);
+        stylingCheckbox.addEventListener("change", () => {
+            toggleDynamicMenus();
+            renderGraph();
+        });
+        colorCheckbox.addEventListener("change", () => {
+            toggleDynamicMenus();
+            renderGraph();
+        });
 
         // Toggle the custom font input based on the font selector
         fontSelector.addEventListener("change", () => {
@@ -436,6 +450,7 @@
         });
 
         // Export button stuff
+        const exportButton = document.getElementById("exportButton");
         exportButton.addEventListener("click", exportGraph);
         document.getElementById("pngExportButton").addEventListener("click", exportGraph);
 
@@ -517,7 +532,7 @@
                     };
 
                     // Set the source of the image to the SVG data URL
-                    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgElement.outerHTML)));
+                    img.src = "data:image/svg+xml;base64," + btoa(svgElement.outerHTML);
                 } else {
                     alert("Unsupported export format selected.");
                 }
