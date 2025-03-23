@@ -244,25 +244,6 @@ class Graph {
 
         return edgeDefinitions;
     }
-
-    /**
-     * Returns edge styling for certain decision.
-     * @param decision - number representation of decision
-     * @returns {string}
-     */
-    getEdgeStyling(decision) {
-        let styling = '';
-
-        if (this.edgeStyling) {
-            styling += `style="${this.edgeStyles[decision] || "solid"}"`;
-        }
-
-        if (this.edgeColoring) {
-            styling += `${styling.trim() ? ', ' : ''}color="${this.edgeColors[decision] || "black"}"`;
-        }
-
-        return styling;
-    }
 }
 
 
