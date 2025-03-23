@@ -432,14 +432,16 @@
         // Graph rendering stuff
         renderButton.addEventListener("click", renderGraph);
         toggleButton.addEventListener("click", function () {
-            if (editor.style.display === "none") {
+            const currentDisplay = window.getComputedStyle(editor).display;
+
+            if (currentDisplay === "none") {
                 // Show the editor
                 editor.style.display = "block";
-                viewCanvas.style.left = "50%"; // Reset viewCanvas position
+                viewCanvas.style.left = "50%";
             } else {
                 // Hide the editor
                 editor.style.display = "none";
-                viewCanvas.style.left = "0"; // Extend viewCanvas to fill the left side
+                viewCanvas.style.left = "0";
             }
 
             // Re-render the graph when toggling the editor. This centers the graph to the middle of the viewCanvas.
