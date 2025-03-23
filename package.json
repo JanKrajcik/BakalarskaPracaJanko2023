@@ -3,9 +3,13 @@
     "@babel/core": "^7.26.9",
     "@babel/preset-env": "^7.26.9",
     "babel-jest": "^29.7.0",
+    "fs-extra": "^11.3.0",
     "jest": "^29.7.0"
   },
   "dependencies": {
     "seedrandom": "^3.0.5"
+  },
+  "scripts": {
+    "prepare-deploy": "node prepare-deploy.js"
   }
 }
