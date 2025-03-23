@@ -128,8 +128,13 @@ body.presentation #viewCanvas {
     display: none;
     top: 0;
     bottom: 0;
-    right: 55%;
+    right: 0;
     left: 0;
+}
+
+#editor.visible {
+    display: block;
+    right: 55%;
 }
 
 #viewCanvas {
@@ -138,8 +143,12 @@ body.presentation #viewCanvas {
     top: 0;
     bottom: 0;
     right: 0;
-    left: 45%;
+    left: 0;
     overflow: scroll;
+}
+
+#viewCanvas.collapsed {
+    left: 45%;
 }
 
 #options {
@@ -176,6 +185,7 @@ body.presentation #viewCanvas {
     display: block;
     color: #FFF;
     z-index: 999;
+    pointer-events: none;
 }
 
 #viewCanvas svg {

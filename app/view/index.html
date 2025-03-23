@@ -429,19 +429,21 @@
         // Initial setup of the dynamic menus (if by default the checkboxes are checked, the menus should be visible, vice versa)
         toggleDynamicMenus();
 
+        let isEditorVisible = false;
+
         // Graph rendering stuff
         renderButton.addEventListener("click", renderGraph);
         toggleButton.addEventListener("click", function () {
-            const currentDisplay = window.getComputedStyle(editor).display;
+            isEditorVisible = !isEditorVisible;
 
-            if (currentDisplay === "none") {
+            if (isEditorVisible) {
                 // Show the editor
-                editor.style.display = "block";
-                viewCanvas.style.left = "50%";
+                editor.classList.add('visible')
+                viewCanvas.classList.add('collapsed')
             } else {
                 // Hide the editor
-                editor.style.display = "none";
-                viewCanvas.style.left = "0";
+                editor.classList.remove('visible')
+                viewCanvas.classList.remove('collapsed')
             }
 
             // Re-render the graph when toggling the editor. This centers the graph to the middle of the viewCanvas.

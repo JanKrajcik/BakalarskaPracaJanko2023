@@ -225,10 +225,10 @@ class ConfigurationTest(unittest.TestCase):
 
     def test_show_editor(self):
         self.gu.toggle_editor()
-        self.gu.toggle_editor()
         self.gu.assert_editor_visible()
 
     def test_hide_editor(self):
+        self.gu.toggle_editor()
         self.gu.toggle_editor()
         self.gu.assert_editor_hidden()
 
@@ -241,6 +241,7 @@ class ConfigurationTest(unittest.TestCase):
         # Stimulation
         self.gu.set_domains('2, 2, 3')
         self.gu.set_truth_vector('0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2')
+        self.gu.toggle_editor()
         self.gu.render()
         self.gu.edit_editor_line(line_to_change, 'node [shape = triangle] 2 4 7;')
 

@@ -45,13 +45,13 @@ class GraphUtils:
         os.environ['PATH'] += r"C:/Program Files/SeleniumDrivers/chrome-win64"
         self.driver = webdriver.Chrome()
         self.driver.maximize_window()
-        self.driver.get("https://mddvisualizer.z36.web.core.windows.net")
+        self.driver.get("http://localhost:63343/BakalarskaPracaJanko2023_3/app/view/index.html?_ijt=tkp9m4pct5minjqnq5eoe948h&_ij_reload=RELOAD_ON_SAVE")
         self.driver.implicitly_wait(1)
         self.gather_elements()
 
     # Reset app without closing and opening the browser
     def reset_application(self):
-        self.driver.get("https://mddvisualizer.z36.web.core.windows.net")
+        self.driver.get("http://localhost:63343/BakalarskaPracaJanko2023_3/app/view/index.html?_ijt=tkp9m4pct5minjqnq5eoe948h&_ij_reload=RELOAD_ON_SAVE")
         self.gather_elements()
 
     # Part of the initialisation process. Gather all relevant elements needed for the tests.
@@ -245,13 +245,10 @@ class GraphUtils:
         self.toggle_editor_button.click()
 
     def assert_editor_hidden(self):
-        editor_style = self.editor.get_attribute("style")
-        assert "display: none" in editor_style, "Editor is visible but should be hidden!"
+        assert "visible" not in self.editor.get_attribute("class"), "Editor is visible but should be hidden!"
 
     def assert_editor_visible(self):
-        editor_style = self.editor.get_attribute("style")
-        assert "display: block" in editor_style or "display: none" not in editor_style, \
-            "Editor is hidden but should be visible!"
+        assert "visible" in self.editor.get_attribute("class"), "Editor is hidden but should be visible!"
 
     # Get all lines from ACE editor
     def get_editor_lines(self):
