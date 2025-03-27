@@ -1,5 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
+/*
+* This file includes code from GraphvizOnline, which is licensed under the BSD-3-Clause license.
+*
+* Original project: https://github.com/GraphvizOnline
+*
+* Copyright (c) Dreampuf
+*
+* This project also includes dependencies:
+* - Viz.js (MIT License)
+* - ACE Editor (BSD-2-Clause License)
+*
+* See the LICENSE file for more details.
+*/
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -162,6 +175,7 @@
     </div>
 </div>
 
+<!--This part was inspired by GraphViz-->
 <script src="../../ace/ace.js"></script>
 <script
         src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"
@@ -172,6 +186,7 @@
 <script src="script.js"></script>
 <script src="viz.js"></script>
 <script src="svg-pan-zoom.min.js"></script>
+<!--The end of the GraphViz inspired part-->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         // Get references to DOM elements
@@ -304,10 +319,12 @@
 
                 // Display the DOT string using Ace Editor (force the dot string to the editor to make implementation easier)
                 if (typeof ace !== "undefined") {
+                    <!--This part was inspired by GraphViz-->
                     const aceEditor = ace.edit("editor");
                     aceEditor.setTheme("ace/theme/twilight");
                     aceEditor.session.setMode("ace/mode/dot");
                     aceEditor.getSession().setValue(dotString);
+                    <!--The end of the GraphViz inspired part-->
                 }
             } catch (error) {
                 console.error("Error generating graph:", error);

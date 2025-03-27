@@ -1,3 +1,16 @@
+/*
+* This file includes code from GraphvizOnline, which is licensed under the BSD-3-Clause license.
+*
+* Original project: https://github.com/GraphvizOnline
+*
+* Copyright (c) Dreampuf
+*
+* This project also includes dependencies:
+* - Viz.js (MIT License)
+* - ACE Editor (BSD-2-Clause License)
+*
+* See the LICENSE file for more details.
+*/
 (function (document) {
     //http://stackoverflow.com/a/10372280/398634
     window.URL = window.URL || window.webkitURL;
