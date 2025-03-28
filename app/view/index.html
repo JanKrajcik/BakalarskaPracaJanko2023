@@ -1,18 +1,16 @@
+<!--This file includes code from GraphvizOnline, which is licensed under the BSD-3-Clause license.-->
+
+<!--Original project: https://github.com/GraphvizOnline-->
+
+<!--Copyright (c) Dreampuf-->
+
+<!--This project also includes dependencies:-->
+<!-- - Viz.js (MIT License)-->
+<!-- - ACE Editor (BSD-2-Clause License)-->
+
+<!--See the LICENSE file for more details.-->
 <!DOCTYPE html>
 <html lang="en">
-/*
-* This file includes code from GraphvizOnline, which is licensed under the BSD-3-Clause license.
-*
-* Original project: https://github.com/GraphvizOnline
-*
-* Copyright (c) Dreampuf
-*
-* This project also includes dependencies:
-* - Viz.js (MIT License)
-* - ACE Editor (BSD-2-Clause License)
-*
-* See the LICENSE file for more details.
-*/
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -450,6 +448,17 @@
 
         // Graph rendering stuff
         renderButton.addEventListener("click", renderGraph);
+        // Render graph if the user presses Enter in the input fields
+        domainInput.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                renderGraph();
+            }
+        });
+        truthVectorInput.addEventListener("keydown", function(event) {
+            if (event.key === "Enter") {
+                renderGraph();
+            }
+        });
         toggleButton.addEventListener("click", function () {
             isEditorVisible = !isEditorVisible;
 
