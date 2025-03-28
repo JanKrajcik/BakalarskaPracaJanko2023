@@ -514,7 +514,7 @@
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement("a");
                     link.href = url;
-                    link.download = "graph.svg";
+                    link.download = "Decision_Diagram.svg";
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -544,7 +544,7 @@
                                 try {
                                     const link = document.createElement("a");
                                     link.href = URL.createObjectURL(blob);
-                                    link.download = "graph.png";
+                                    link.download = "Decision_Diagram.png";
                                     link.click();
                                 } catch (linkError) {
                                     console.error("Error creating PNG download link:", linkError);

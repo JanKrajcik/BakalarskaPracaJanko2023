@@ -15,8 +15,8 @@ class InputToExport(unittest.TestCase):
         cls.gu = GraphUtils()
         downloaded_image_path = os.path.join(os.path.expanduser('~'), 'Downloads')
         expected_image_path = os.path.join('expected_graph_diagrams')
-        cls.downloaded_image_path_png = os.path.join(downloaded_image_path, 'graph.png')
-        cls.downloaded_image_path_svg = os.path.join(downloaded_image_path, 'graph.svg')
+        cls.downloaded_image_path_png = os.path.join(downloaded_image_path, 'Decision_Diagram.png')
+        cls.downloaded_image_path_svg = os.path.join(downloaded_image_path, 'Decision_Diagram.svg')
         cls.expected_image_path_png = os.path.join(expected_image_path, 'expected_input_to_export.png')
         cls.expected_image_path_svg = os.path.join(expected_image_path, 'expected_input_to_export.svg')
 

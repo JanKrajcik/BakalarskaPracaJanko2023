@@ -10,7 +10,7 @@ class ConfigurationTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.gu = GraphUtils()
-        cls.downloaded_image_path_png = os.path.join(os.path.expanduser('~'), 'Downloads', 'graph.png')
+        cls.downloaded_image_path_png = os.path.join(os.path.expanduser('~'), 'Downloads', 'Decision_Diagram.png')
         cls.expected_image_path = os.path.join('expected_graph_diagrams')
 
     def setUp(self):
@@ -244,7 +244,6 @@ class ConfigurationTest(unittest.TestCase):
         self.gu.toggle_editor()
         self.gu.render()
         self.gu.edit_editor_line(line_to_change, 'node [shape = triangle] 2 4 7;')
-
         # Verification of editor content
         assert self.gu.get_editor_line_content(
             line_to_change) == '    node [shape = triangle] 2 4 7;', "The content is not as expected."
