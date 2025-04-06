@@ -45,13 +45,13 @@ class GraphUtils:
         os.environ['PATH'] += r"C:/Program Files/SeleniumDrivers/chrome-win64"
         self.driver = webdriver.Chrome()
         self.driver.maximize_window()
-        self.driver.get("http://localhost:63343/BakalarskaPracaJanko2023_3/app/view/index.html?_ijt=tkp9m4pct5minjqnq5eoe948h&_ij_reload=RELOAD_ON_SAVE")
+        self.driver.get("https://mddvisualizer.z36.web.core.windows.net")
         self.driver.implicitly_wait(1)
         self.gather_elements()
 
     # Reset app without closing and opening the browser
     def reset_application(self):
-        self.driver.get("http://localhost:63343/BakalarskaPracaJanko2023_3/app/view/index.html?_ijt=tkp9m4pct5minjqnq5eoe948h&_ij_reload=RELOAD_ON_SAVE")
+        self.driver.get("https://mddvisualizer.z36.web.core.windows.net")
         self.gather_elements()
 
     # Part of the initialisation process. Gather all relevant elements needed for the tests.
