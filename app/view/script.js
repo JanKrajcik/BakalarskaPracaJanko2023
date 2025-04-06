@@ -83,44 +83,46 @@
     }
 
 
-    function renderGraph() {
-        reviewer.classList.add("working");
-        reviewer.classList.remove("error");
-        
-        let worker;
+function renderGraph() {
+    reviewer.classList.add("working");
+    reviewer.classList.remove("error");
 
-        if (worker) {
-            worker.terminate();
-        } else if (!worker) {
-            worker = new Worker("./full.render.js");
+    let worker;
 
-            worker.addEventListener("message", function (e) {
-                if (typeof e.data.error !== "undefined") {
-                    var event = new CustomEvent("error", {"detail": new Error(e.data.error.message)});
-                    worker.dispatchEvent(event);
-                    return
-                }
-                reviewer.classList.remove("working");
-                reviewer.classList.remove("error");
-                updateOutput(e.data.result);
-            }, false);
-            worker.addEventListener('error', function (e) {
-                show_error(e.detail);
-            }, false);
-        }
+    if (worker) {
+        worker.terminate();
+    } else if (!worker) {
+        worker = new Worker("./full.render.js");
 
-        show_status("rendering...");
-        var params = {
-            "src": editor.getSession().getDocument().getValue(),
-            "id": new Date().toJSON(),
-            "options": {
-                "files": [],
-                "format": formatEl === "png-image-element" ? "png" : "svg",
-                "engine": engineEl || "dot"
-            },
-        };
-        worker.postMessage(params);
+        worker.addEventListener("message", function (e) {
+            if (typeof e.data.error !== "undefined") {
+                var event = new CustomEvent("error", {"detail": new Error(e.data.error.message)});
+                worker.dispatchEvent(event);
+                return
+            }
+            reviewer.classList.remove("working");
+            reviewer.classList.remove("error");
+            document.body.style.cursor = "default";
+            updateOutput(e.data.result);
+        }, false);
+        worker.addEventListener('error', function (e) {
+            show_error(e.detail);
+            document.body.style.cursor = "default";
+        }, false);
     }
+
+    show_status("rendering...");
+    var params = {
+        "src": editor.getSession().getDocument().getValue(),
+        "id": new Date().toJSON(),
+        "options": {
+            "files": [],
+            "format": formatEl === "png-image-element" ? "png" : "svg",
+            "engine": engineEl || "dot"
+        },
+    };
+    worker.postMessage(params);
+}
 
     function updateState() {
         var content = encodeURIComponent(editor.getSession().getDocument().getValue());

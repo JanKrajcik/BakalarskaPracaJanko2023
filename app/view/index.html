@@ -317,6 +317,7 @@
 
                 // Display the DOT string using Ace Editor (force the dot string to the editor to make implementation easier)
                 if (typeof ace !== "undefined") {
+                    document.body.style.cursor = "wait";
                     <!--This part was inspired by GraphViz-->
                     const aceEditor = ace.edit("editor");
                     aceEditor.setTheme("ace/theme/twilight");
@@ -471,6 +472,11 @@
                 editor.classList.remove('visible')
                 viewCanvas.classList.remove('collapsed')
             }
+
+            // After transition, the editor was bugged. This resize event is a workaround to fix it.
+            editor.addEventListener('transitionend', function() {
+                window.dispatchEvent(new Event('resize'));
+            }, { once: true });
 
             // Re-render the graph when toggling the editor. This centers the graph to the middle of the viewCanvas.
             renderGraph();
