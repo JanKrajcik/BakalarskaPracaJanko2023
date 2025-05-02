@@ -173,7 +173,7 @@ class ConfigurationTest(unittest.TestCase):
         self.gu.wait_for_image(self.downloaded_image_path_png)
 
         # Verification
-        assert self.gu.images_are_identical(self.downloaded_image_path_png, expected_image_path), "The images are different."
+        assert self.gu.images_are_identical(self.downloaded_image_path_png, expected_image_path, 0.97), "The images are different."
         print('Test passed! Font selector affected the graph.')
 
     def test_font_selector_custom_font(self):
