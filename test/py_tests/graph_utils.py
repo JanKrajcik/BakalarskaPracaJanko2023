@@ -4,6 +4,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
 import time
 import hashlib
 import difflib
@@ -42,9 +45,24 @@ class GraphUtils:
         self.gather_elements()
 
     def _setup_browser(self):
-        os.environ['PATH'] += r"C:/Program Files/SeleniumDrivers/chrome-win64"
-        self.driver = webdriver.Chrome()
-        self.driver.maximize_window()
+        is_github_runner = os.getenv('CI', 'false').lower() == 'true'
+
+        if is_github_runner:
+            chrome_options = Options()
+            chrome_options.add_argument("--no-sandbox")
+            chrome_options.add_argument("--disable-dev-shm-usage")
+            chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--remote-debugging-port=9222")
+            os.environ['PATH'] += r":/usr/bin"  # Path for ChromeDriver on Linux
+            self.driver = webdriver.Chrome(
+                service=Service(ChromeDriverManager().install()),
+                options=chrome_options
+            )
+        else:
+            os.environ['PATH'] += r"C:/Program Files/SeleniumDrivers/chrome-win64"
+            self.driver = webdriver.Chrome()
+            self.driver.maximize_window()
+
         self.driver.get("https://mddvisualizer.z36.web.core.windows.net")
         self.driver.implicitly_wait(1)
         self.gather_elements()

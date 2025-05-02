@@ -1,0 +1,45 @@
+name: Run presentation layer Tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  gui-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r test/py_tests/requirements.txt
+          pip install webdriver-manager  # Add this package to manage chromedriver
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@latest
+        with:
+          chrome-version: stable
+
+      - name: Run GUI Tests
+        env:
+          DISPLAY: ":99"
+          USE_WEBDRIVER_MANAGER: "true"
+        working-directory: test/py_tests
+        run: |
+          Xvfb :99 -screen 0 1920x1080x24 -nolisten tcp > /dev/null 2>&1 &
+          export DISPLAY=:99
+          python ./run_all_tests.py
+          continue-on-error: false

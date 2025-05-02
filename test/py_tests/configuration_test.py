@@ -183,7 +183,7 @@ class ConfigurationTest(unittest.TestCase):
         self.gu.set_domains('2, 2, 3')
         self.gu.set_truth_vector('0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 2, 2')
         self.gu.set_font(Font.MY_OWN_FONT)
-        self.gu.set_custom_font('ZapfDingbats')
+        self.gu.set_custom_font('Consolas')
         self.gu.render()
         self.gu.scroll_down_control_panel()
         self.gu.export(ExportFormat.PNG)
