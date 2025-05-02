@@ -1,28 +1,30 @@
-// This script prepares index.html for deployment by replacing paths to local files with relative paths.
-
 const fs = require('fs');
 const path = require('path');
 
-const srcFilePath = path.join(__dirname, './app/view/index.html');
-const distDir = path.join(__dirname, 'dist');
-const distFilePath = path.join(distDir, 'index.html');
+const srcDir = path.join(__dirname, 'app');
+const indexSourcePath = path.join(srcDir, 'view/index.html');
+const docsDir = path.join(__dirname, 'docs');
+const indexOutputPath = path.join(docsDir, 'index.html');
 
-// Clean & recreate dist directory
-fs.rmSync(distDir, { recursive: true, force: true });
-fs.mkdirSync(distDir);
+// Ensure /docs exists
+if (!fs.existsSync(docsDir)) {
+    fs.mkdirSync(docsDir, { recursive: true });
+}
 
-// Read index.html
-let content = fs.readFileSync(srcFilePath, 'utf8');
+// Read index.html content
+let content = fs.readFileSync(indexSourcePath, 'utf8');
 
-// Replace paths
+// Automatically fix local src/href paths
 content = content.replace(/(src|href)=["']([^"']+)["']/g, (match, attr, originalPath) => {
-    // Leave external links unchanged
-    if (originalPath.startsWith('http') || originalPath.startsWith('//')) return match;
-    const fileName = path.basename(originalPath);
+    // Keep external links (e.g. https://...)
+    if (/^(https?:)?\/\//.test(originalPath)) return match;
+
+    const fileName = path.basename(originalPath); // Extract just "file.js"
     return `${attr}="./${fileName}"`;
 });
 
-// Write modified index.html
-fs.writeFileSync(distFilePath, content, 'utf8');
+// Write output to debug and final destination
+fs.writeFileSync(path.join(__dirname, 'debug_index_output.html'), content, 'utf8'); // optional
+fs.writeFileSync(indexOutputPath, content, 'utf8');
 
-console.log('Modified index.html written to /dist.');
+console.log('✅ index.html paths automatically rewritten and saved to /docs');
