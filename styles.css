@@ -11,7 +11,7 @@ polygon {
 
 .left-side {
     flex: 1;
-    background-color: #0c2967;
+    background-color: #f0f0f0;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -22,7 +22,7 @@ polygon {
 .control-panel {
     width: 25%;
     padding: 20px;
-    background-color: #931826;
+    background-color: #d6d6d6;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
